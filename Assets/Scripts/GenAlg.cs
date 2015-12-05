@@ -25,6 +25,11 @@ public struct Genome
         }
         return 0;
     }
+
+    public void AddFitness(float score)
+    {
+        fitness += score;
+    }
 }
 
 public class GenAlg : MonoBehaviour 
