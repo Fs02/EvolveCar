@@ -12,9 +12,7 @@ public class CarBlackBoxController : MonoBehaviour
     private NeuralNet m_BlackBox;
     private Rigidbody m_Rigidbody;
 
-    public float forwardSight = 20f;
-    public float sideForwardSight = 5f;
-    public float sideSight = 2f;
+    public float sight = 25f;
     public Transform sensor;
 
     private void Awake()
@@ -31,34 +29,52 @@ public class CarBlackBoxController : MonoBehaviour
 
         // Forward Sensor
         RaycastHit hit;
-        Physics.Raycast(sensor.position, sensor.forward, out hit, forwardSight);
-        inputs.Add(Mathf.Max(hit.distance / forwardSight, 1f));
+        Physics.Raycast(sensor.position, sensor.forward, out hit, sight);
+        inputs.Add(Mathf.Max(hit.distance / sight, 1f));
         if (hit.collider)
             Debug.DrawRay(sensor.position, sensor.forward * hit.distance, Color.red);
 
         // Side forward Sensors
-        var sideForwardLeft = Quaternion.AngleAxis(-45f, sensor.up) * sensor.forward;
-        Physics.Raycast(sensor.position, sideForwardLeft, out hit, sideForwardSight);
-        inputs.Add(Mathf.Max(hit.distance / sideForwardSight, 1f));
+        var distance = sight / 1.5f;
+        var direction = Quaternion.AngleAxis(-10f, sensor.up) * sensor.forward;
+        Physics.Raycast(sensor.position, direction, out hit, distance);
+        inputs.Add(Mathf.Max(hit.distance / distance, 1f));
         if (hit.collider)
-            Debug.DrawRay(sensor.position, sideForwardLeft * hit.distance, Color.red);
+            Debug.DrawRay(sensor.position, direction * hit.distance, Color.red);
 
-        var sideForwardRight = Quaternion.AngleAxis(45f, sensor.up) * sensor.forward;
-        Physics.Raycast(sensor.position, sideForwardRight, out hit, sideForwardSight);
-        inputs.Add(Mathf.Max(hit.distance / sideForwardSight, 1f));
+        direction = Quaternion.AngleAxis(10f, sensor.up) * sensor.forward;
+        Physics.Raycast(sensor.position, direction, out hit, distance);
+        inputs.Add(Mathf.Max(hit.distance / distance, 1f));
         if (hit.collider)
-            Debug.DrawRay(sensor.position, sideForwardRight * hit.distance, Color.red);
+            Debug.DrawRay(sensor.position, direction * hit.distance, Color.red);
+
+
+        distance = sight / 6f;
+        direction = Quaternion.AngleAxis(-40f, sensor.up) * sensor.forward;
+        Physics.Raycast(sensor.position, direction, out hit, distance);
+        inputs.Add(Mathf.Max(hit.distance / distance, 1f));
+        if (hit.collider)
+          Debug.DrawRay(sensor.position, direction * hit.distance, Color.red);
+
+        direction = Quaternion.AngleAxis(40f, sensor.up) * sensor.forward;
+        Physics.Raycast(sensor.position, direction, out hit, distance);
+        inputs.Add(Mathf.Max(hit.distance / distance, 1f));
+        if (hit.collider)
+           Debug.DrawRay(sensor.position, direction * hit.distance, Color.red);
 
         // Side sensors
-        Physics.Raycast(sensor.position, -sensor.right, out hit, sideSight);
-        inputs.Add(Mathf.Max(hit.distance / sideSight, 1f));
+        distance = sight / 9f;
+        Physics.Raycast(sensor.position, -sensor.right, out hit, distance);
+        inputs.Add(Mathf.Max(hit.distance / distance, 1f));
         if (hit.collider)
             Debug.DrawRay(sensor.position, -sensor.right * hit.distance, Color.red);
 
-        Physics.Raycast(sensor.position, sensor.right, out hit, sideSight);
-        inputs.Add(Mathf.Max(hit.distance / sideSight, 1f));
+        Physics.Raycast(sensor.position, sensor.right, out hit, distance);
+        inputs.Add(Mathf.Max(hit.distance / distance, 1f));
         if (hit.collider)
             Debug.DrawRay(sensor.position, sensor.right * hit.distance, Color.red);
+
+        inputs.Add(m_CarController.CurrentSpeed / m_CarController.MaxSpeed);
 
         List<double> outputs = m_BlackBox.Process(inputs);
 
