@@ -37,21 +37,28 @@ public class GenAlg : MonoBehaviour
     public int EliteCopies = 1;
 
     List<Genome> Population = new List<Genome>();
-    int PopulationSize;
-    double TotalFitness = 0;
-    double BestFitness = 0;
-    double AverageFitness = 0;
-    double WorstFitness = float.MaxValue;
+    public int PopulationSize;
+    public double TotalFitness = 0;
+    public double BestFitness = 0;
+    public double AverageFitness = 0;
+    public double WorstFitness = float.MaxValue;
     int FittestGenome = 0;
 
     int cGeneration;
 
-
-    void Init(int PopulationCount, int WeightCount)
+    public void Init()
     {
+        Init(PopulationSize, ChromoLength);
+    }
+
+    public void Init(int PopulationCount, int WeightCount)
+    {
+        Debug.Log(PopulationSize);
+        Debug.Log(WeightCount);
+        Population.Clear();
         for (int i = 0; i <PopulationCount; ++i)
         {
-            Population.Add(new Genome());
+            Population.Add(new Genome(new List<double>(), 0));
 
             for (int j = 0; j < ChromoLength; ++j)
             {

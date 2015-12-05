@@ -104,6 +104,21 @@ public class NeuralNet : MonoBehaviour {
         return count;
     }
 
+    public void PutWeights(List<double> weights)
+    {
+        int counter = 0;
+        for (int i = 0; i < HiddenLayersCount + 1; ++i)
+        {
+            for (int j = 0; j < Layers[i].NeuronsCount; ++j)
+            {
+                for (int k = 0; k < Layers[i].Neurons[j].InputsCount; ++k)
+                {
+                    Layers[i].Neurons[j].Weights[k] = weights[counter++];
+                }
+            }
+        }
+    }
+
     public List<double> Process(List<double> inputs)
     {
         List<double> outputs = new List<double>();
