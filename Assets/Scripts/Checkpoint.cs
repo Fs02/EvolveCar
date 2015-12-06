@@ -2,9 +2,11 @@
 using System.Collections;
 
 public class Checkpoint : MonoBehaviour {
+    public bool last = false;
+
     void OnTriggerEnter(Collider other)
     {
-        LearnDirector.Instance.CheckPoint(this);
+        LearnDirector.Instance.CheckPoint(this, last);
         gameObject.SetActive(false);
     }
 }

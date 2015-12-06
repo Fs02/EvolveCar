@@ -23,6 +23,10 @@ public class LearnDirector : MonoBehaviour {
     private Artificial.GeneticAlgorithm genetic;
     private int totalWeightInNN;
     private List<Artificial.Genome> population = new List<Artificial.Genome>();
+    public double CurrentFitness
+    {
+        get { return population[currentIndividu-1].m_fitness; }
+    }
 
     private int currentIndividu = 0;
     private int currentGeneration = 0;
@@ -100,18 +104,23 @@ public class LearnDirector : MonoBehaviour {
 
     void NextGeneration()
     {
-        SaveStatistics("201512061155/" + currentGeneration.ToString() + ".csv");
+        SaveStatistics("201512061244/" + currentGeneration.ToString() + ".csv");
         currentIndividu = 0;
         ++currentGeneration;
         population = genetic.Epoch(ref population);
         NextIndividu();
     }
 
-    public void CheckPoint(Checkpoint checkpoint)
+    public void CheckPoint(Checkpoint checkpoint, bool last=false)
     {
+        elapsedCheckpoint.Add(checkpoint);
+        if (last && elapsedCheckpoint.Count < 30)
+        {
+            NextIndividu();
+            return;
+        }
  //       population[currentIndividu].AddFitness(timeleft);
         population[currentIndividu-1].m_fitness += timeleft + maxTrialTime;
-        elapsedCheckpoint.Add(checkpoint);
         timeleft = maxTrialTime;
     }
 

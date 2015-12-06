@@ -96,10 +96,12 @@ public class CarBlackBoxController : MonoBehaviour
 
         string text = "Input : ";
         foreach (double i in inputs)
-            text += i + ", ";
+            text += "\n" + i;
         text += "\nOutput : ";
         foreach (double o in outputs)
-            text += o + ", ";
+            text += "\n" + o;
+
+        text += "\nFitness : " + LearnDirector.Instance.CurrentFitness;
         indicator.text = text;
     }
 
