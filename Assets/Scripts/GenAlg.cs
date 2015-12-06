@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public struct Genome
+public class Genome
 {
     public List<double> weights;
     public double fitness;
@@ -13,20 +13,7 @@ public struct Genome
         this.fitness = Fitness;
     }
 
-    public static int Compare(Genome left, Genome right)
-    {
-        if (left.fitness < right.fitness)
-        {
-            return -1;
-        }
-        if (left.fitness > right.fitness)
-        {
-            return 1;
-        }
-        return 0;
-    }
-
-    public void AddFitness(float score)
+    public void AddFitness(double score)
     {
         fitness += score;
     }
@@ -72,12 +59,12 @@ public class GenAlg : MonoBehaviour
         }
     }
 
-    List<Genome> Epoch(List<Genome> old)
+    public List<Genome> Epoch(List<Genome> old)
     {
         Population = old;
         Reset();
 
-        Population.Sort();
+        Population.Sort((g1, g2) => g1.fitness.CompareTo(g2.fitness));
 
         CalculateBestWorstToAvTot();
 
@@ -138,7 +125,7 @@ public class GenAlg : MonoBehaviour
             baby2.Add(dad[i]);
         }
 
-        for (int i = cp; i < ChromoLength; ++i)
+        for (int i = cp; i < mum.Count; ++i)
         {
             baby1.Add(dad[i]);
             baby2.Add(mum[i]);
@@ -166,11 +153,11 @@ public class GenAlg : MonoBehaviour
     {
         while (NBest > 0)
         {
+            --NBest;
             for (int i = 0; i < Copies; ++i)
             {
                 Pop.Add(Population[Population.Count - 1 - NBest]);
             }
-            --NBest;
         }
     }
 

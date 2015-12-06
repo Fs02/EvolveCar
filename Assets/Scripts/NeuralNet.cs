@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using System;
 
-public struct Neuron
+public class Neuron
 {
     public int InputsCount;
     public List<double> Weights;
 
-    public Neuron(int InputsCount)
+    public Neuron(int inputsCount)
     {
-        this.InputsCount = InputsCount;
+        this.InputsCount = inputsCount+1;
 
         Weights = new List<double>();
         // Additional one is for the bias
-        for (int i = 0; i < InputsCount+1; ++i )
+        for (int i = 0; i < this.InputsCount; ++i)
         {
             Weights.Add((double)UnityEngine.Random.Range(-1f, 1f));
         }
     }
 }
 
-public struct NeuronLayer
+public class NeuronLayer
 {
     public int NeuronsCount;
     public List<Neuron> Neurons;
@@ -78,13 +78,13 @@ public class NeuralNet : MonoBehaviour {
     {
         List<double> weights = new List<double>();
 
-        foreach (NeuronLayer layer in this.Layers)
+        for (int i = 0; i < HiddenLayersCount + 1; ++i )
         {
-            foreach (Neuron neuron in layer.Neurons)
+            for (int j = 0; j < Layers[i].NeuronsCount; ++j )
             {
-                for (int i = 0; i < neuron.InputsCount; ++i)
+                for (int k = 0; k < Layers[i].Neurons[j].InputsCount; ++k )
                 {
-                    weights.Add(neuron.Weights[i]);
+                    weights.Add(Layers[i].Neurons[j].Weights[k]);
                 }
             }
         }
@@ -94,11 +94,14 @@ public class NeuralNet : MonoBehaviour {
     public int GetCountWeights()
     {
         int count = 0;
-        foreach (NeuronLayer layer in this.Layers)
+        for (int i = 0; i < HiddenLayersCount + 1; ++i)
         {
-            foreach (Neuron neuron in layer.Neurons)
+            for (int j = 0; j < Layers[i].NeuronsCount; ++j)
             {
-                count += neuron.InputsCount;
+                for (int k = 0; k < Layers[i].Neurons[j].InputsCount; ++k)
+                {
+                    ++count;
+                }
             }
         }
         return count;
@@ -137,19 +140,22 @@ public class NeuralNet : MonoBehaviour {
             cWeight = 0;
 
             // sum the total of inputs*weights
-            foreach (Neuron neuron in Layers[i].Neurons)
+            for (int j = 0; j < Layers[i].NeuronsCount; ++j )
             {
                 double netinput = 0;
+                Debug.Log(Layers[i].Neurons[j].InputsCount + " : " + inputs.Count);
+
                 // TODO:
-                // for (int j = 0; i < neuron.InputsCount - 1; ++i)
-                for (int j = 0; i < neuron.InputsCount; ++i)
+                for (int k = 0; k < Layers[i].Neurons[j].InputsCount - 1; ++k)
+                //for (int j = 0; j < neuron.InputsCount; ++j)
                 {
-                    netinput += neuron.Weights[j] * inputs[cWeight++];
+                    netinput += Layers[i].Neurons[j].Weights[k] * inputs[cWeight];
+                    cWeight++;
                 }
                 // add bias
-                netinput += neuron.Weights[neuron.InputsCount] * Biass;
+                netinput += Layers[i].Neurons[j].Weights[Layers[i].Neurons[j].InputsCount - 1] * Biass;
 
-                outputs.Add(Sigmoid(netinput, ActivationResponse));
+                outputs.Add(Math.Tanh(netinput));
 
                 cWeight = 0;
             }
@@ -159,6 +165,6 @@ public class NeuralNet : MonoBehaviour {
 
     public double Sigmoid(double netinput, double response)
     {
-	    return ( 2 / ( 1 + Math.Exp(2 * -netinput / response)) - 1);
+	    return 1 / ( 1 + Math.Exp(-netinput / response));
     }
 }
