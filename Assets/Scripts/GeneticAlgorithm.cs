@@ -15,6 +15,12 @@ namespace Artificial
             m_fitness = 0;
         }
 
+        public Genome(Genome copy)
+        {
+            m_weights = new List<double>(copy.m_weights);
+            m_fitness = copy.m_fitness;
+        }
+
         public Genome(List<double> weights, double fitness)
         {
             m_weights = weights;
@@ -70,7 +76,7 @@ namespace Artificial
 
         Genome GetChromoRoulette()
         {
-            double slice = (double)(Random.Range(0f, 1f) * m_totalFitness);
+            double slice = (double)(Random.Range(0f, 0.999f) * m_totalFitness);
             double fitnessSoFar = 0;
 
             for (int i = 0; i < m_populationSize; ++i)
@@ -79,11 +85,10 @@ namespace Artificial
 
                 if (fitnessSoFar >= slice)
                 {
-                    return m_population[i];
-                    break;
+                    return new Genome(m_population[i]);
                 }
             }
-            return m_population[m_populationSize-1];
+            return new Genome(m_population[m_populationSize-1]);
         }
 
         void Crossover(Genome mum, Genome dad, ref Genome baby1, ref Genome baby2)
@@ -124,6 +129,10 @@ namespace Artificial
             if (m_elite * m_eliteCopies % 2 == 0)
             {
                 GrabNBest(m_elite, m_eliteCopies, ref newPopulation);
+                if (newPopulation[0].m_fitness != m_population[m_populationSize - 2].m_fitness)
+                    Debug.LogError("Error 1");
+                if (newPopulation[1].m_fitness != m_population[m_populationSize - 1].m_fitness)
+                    Debug.LogError("Error 2");
             }
 
             while (newPopulation.Count < m_populationSize)
@@ -152,12 +161,13 @@ namespace Artificial
             {
                 for (int i = 0; i < bestCopies; ++i)
                 {
-                    population.Add(m_population[m_populationSize - 1 - bestCount]);
+                    Debug.Log("best id : " + (m_populationSize - 1 - bestCount) + " | "  + m_population[m_populationSize - 1 - bestCount].m_fitness);
+                    population.Add(new Genome(m_population[m_populationSize - 1 - bestCount]));
                 }
             }
         }
 
-        void CalculateBestWorstAvTot()
+        public void CalculateBestWorstAvTot()
         {
             m_totalFitness = 0;
             double highestSoFar = 0;

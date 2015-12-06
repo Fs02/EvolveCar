@@ -23,10 +23,14 @@ public class LearnDirector : MonoBehaviour {
     private Artificial.GeneticAlgorithm genetic;
     private int totalWeightInNN;
     private List<Artificial.Genome> population = new List<Artificial.Genome>();
+
     public double CurrentFitness
     {
         get { return population[currentIndividu-1].m_fitness; }
     }
+
+    [DBG_Track(0f, 0f, 1f)]
+    public float BestFitness = 0;
 
     private int currentIndividu = 0;
     private int currentGeneration = 0;
@@ -58,6 +62,7 @@ public class LearnDirector : MonoBehaviour {
 
     void Update()
     {
+        genetic.CalculateBestWorstAvTot();
         indicator.text =
             "Generation : " + currentGeneration +
             "\nIndividu : " + currentIndividu +
@@ -82,11 +87,6 @@ public class LearnDirector : MonoBehaviour {
 
     void NextIndividu()
     {
-  //      string chromo = " .C : ";
- //       foreach (double c in population[currentIndividu].weights)
-//            chromo += " " + c;
-//        Debug.Log("G : " + currentGeneration + " .I : " + currentIndividu + " .F:" + population[currentIndividu].fitness + chromo);
-
         carBrain.GetComponent<CarBlackBoxController>().Reset();
         carBrain.transform.position = start.position;
         carBrain.transform.rotation = start.rotation;
@@ -104,24 +104,43 @@ public class LearnDirector : MonoBehaviour {
 
     void NextGeneration()
     {
-        SaveStatistics("201512061244/" + currentGeneration.ToString() + ".csv");
+        BestFitness = (float)genetic.m_bestFitness;
+        SaveStatistics("Reports/" + currentGeneration.ToString() + ".csv");
         currentIndividu = 0;
         ++currentGeneration;
         population = genetic.Epoch(ref population);
         NextIndividu();
     }
 
-    public void CheckPoint(Checkpoint checkpoint, bool last=false)
+    public void ReportCheckPoint(Checkpoint checkpoint, bool last=false)
     {
         elapsedCheckpoint.Add(checkpoint);
         if (last && elapsedCheckpoint.Count < 30)
         {
-            NextIndividu();
+            if (currentIndividu < populationSize)
+            {
+                NextIndividu();
+            }
+            else
+            {
+                NextGeneration();
+            }
             return;
         }
- //       population[currentIndividu].AddFitness(timeleft);
-        population[currentIndividu-1].m_fitness += timeleft + maxTrialTime;
+        population[currentIndividu - 1].m_fitness += timeleft + maxTrialTime;
         timeleft = maxTrialTime;
+    }
+
+    public void ReportCrash()
+    {
+        if (currentIndividu < populationSize)
+        {
+            NextIndividu();
+        }
+        else
+        {
+            NextGeneration();
+        }
     }
 
     void SaveStatistics(string path)

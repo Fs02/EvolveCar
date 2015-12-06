@@ -6,7 +6,7 @@ public class Checkpoint : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
-        LearnDirector.Instance.CheckPoint(this, last);
         gameObject.SetActive(false);
+        LearnDirector.Instance.ReportCheckPoint(this, last);
     }
 }
