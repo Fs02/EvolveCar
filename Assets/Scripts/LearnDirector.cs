@@ -100,7 +100,7 @@ public class LearnDirector : MonoBehaviour {
 
     void NextGeneration()
     {
-        SaveStatistics("201512060614/" + currentGeneration.ToString() + ".csv");
+        SaveStatistics("201512061155/" + currentGeneration.ToString() + ".csv");
         currentIndividu = 0;
         ++currentGeneration;
         population = genetic.Epoch(ref population);
@@ -110,7 +110,7 @@ public class LearnDirector : MonoBehaviour {
     public void CheckPoint(Checkpoint checkpoint)
     {
  //       population[currentIndividu].AddFitness(timeleft);
-        population[currentIndividu-1].m_fitness += timeleft;
+        population[currentIndividu-1].m_fitness += timeleft + maxTrialTime;
         elapsedCheckpoint.Add(checkpoint);
         timeleft = maxTrialTime;
     }
