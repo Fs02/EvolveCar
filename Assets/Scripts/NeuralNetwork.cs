@@ -9,12 +9,12 @@ namespace Artificial
     public class Neuron
     {
         public int m_inputsCount;
-        public List<double> m_weights;
+        public List<float> m_weights;
 
         public Neuron(int count)
         {
             m_inputsCount = count + 1;
-            m_weights = new List<double>();
+            m_weights = new List<float>();
             for (int i = 0; i < m_inputsCount; ++i)
             {
                 m_weights.Add(Random.Range(-1f, 1f));
@@ -74,9 +74,9 @@ namespace Artificial
             }
         }
 
-        public List<double> GetWeights()
+        public List<float> GetWeights()
         {
-            var weights = new List<double>();
+            var weights = new List<float>();
 
             for (int i = 0; i < m_hiddenLayersCount + 1; ++i)
             {
@@ -91,7 +91,7 @@ namespace Artificial
             return weights;
         }
 
-        public void PutWeights(List<double> weights)
+        public void PutWeights(List<float> weights)
         {
             int counter = 0;
 
@@ -125,9 +125,9 @@ namespace Artificial
             return counter;
         }
 
-        public List<double> Process(List<double> inputs)
+        public List<float> Process(List<float> inputs)
         {
-            List<double> outputs = new List<double>();
+            List<float> outputs = new List<float>();
 
             if (inputs.Count != m_inputsCount)
                 return outputs;
@@ -135,13 +135,13 @@ namespace Artificial
             for (int i = 0; i < m_hiddenLayersCount + 1; ++i)
             {
                 if (i > 0)
-                    inputs = new List<double>(outputs);
+                    inputs = new List<float>(outputs);
                 outputs.Clear();
 
                 for (int j = 0; j < m_layers[i].m_neuronsCount; ++j)
                 {
                     int counter = 0;
-                    double netinput = 0;
+                    float netinput = 0;
                     int inputsCount = m_layers[i].m_neurons[j].m_inputsCount;
 
                     for (int k = 0; k < inputsCount - 1; ++k)
@@ -153,7 +153,7 @@ namespace Artificial
                     // bias
                     netinput += m_layers[i].m_neurons[j].m_weights[inputsCount - 1] * m_biass;
 
-                    outputs.Add(Math.Tanh(netinput));
+                    outputs.Add((float)Math.Tanh(netinput));
                 }
             }
             return outputs;

@@ -24,7 +24,7 @@ public class LearnDirector : MonoBehaviour {
     private int totalWeightInNN;
     private List<Artificial.Genome> population = new List<Artificial.Genome>();
 
-    public double CurrentFitness
+    public float CurrentFitness
     {
         get { return population[currentIndividu-1].m_fitness; }
     }
@@ -39,6 +39,9 @@ public class LearnDirector : MonoBehaviour {
     private List<Checkpoint> elapsedCheckpoint = new List<Checkpoint>();
 
     public Text indicator;
+
+    List<string[]> StatisticsSummary = new List<string[]>();
+    int respwan = 0;
 
     void Awake()
     {
@@ -56,6 +59,13 @@ public class LearnDirector : MonoBehaviour {
 
         population = genetic.GetChromo();
         NextIndividu();
+
+        string[] label = new string[4];
+        label[0] = "Best fitness";
+        label[1] = "Average fitness";
+        label[2] = "Worst fitness";
+        label[3] = "Respawn";
+        StatisticsSummary.Add(label);
 
         Application.runInBackground = true;
     }
@@ -107,9 +117,20 @@ public class LearnDirector : MonoBehaviour {
         BestFitness = (float)genetic.m_bestFitness;
         SaveStatistics("Reports/" + currentGeneration.ToString() + ".csv");
         currentIndividu = 0;
+        respwan = 0;
         ++currentGeneration;
         population = genetic.Epoch(ref population);
         NextIndividu();
+    }
+
+    public void Respawn()
+    {
+        Debug.LogWarning("Respawn");
+        respwan++;
+        carBrain.GetComponent<CarBlackBoxController>().Reset();
+        carBrain.transform.position = start.position;
+        carBrain.transform.rotation = start.rotation;
+        timeleft = maxTrialTime;
     }
 
     public void ReportCheckPoint(Checkpoint checkpoint, bool last=false)
@@ -221,7 +242,7 @@ public class LearnDirector : MonoBehaviour {
             data[0] = (++count).ToString();
             data[1] = i.m_fitness.ToString();
             data[2] = "";
-            foreach (double c in genetic.m_population[count-1].m_weights)
+            foreach (float c in genetic.m_population[count - 1].m_weights)
                 data[2] += c + ", ";
 
             row.Add(data);
@@ -264,6 +285,32 @@ public class LearnDirector : MonoBehaviour {
             sb.AppendLine(string.Join(delimiter, output[index]));
 
         StreamWriter outStream = System.IO.File.CreateText(path);
+        outStream.WriteLine(sb);
+        outStream.Close();
+
+        // Write summary report
+        var stats = new string[4];
+        stats[0] = genetic.m_bestFitness.ToString();
+        stats[1] = genetic.m_averageFitness.ToString();
+        stats[2] = genetic.m_worstFitness.ToString();
+        stats[3] = respwan.ToString();
+        StatisticsSummary.Add(stats);
+
+        output = new string[StatisticsSummary.Count][];
+
+        for (int i = 0; i < output.Length; i++)
+        {
+            output[i] = StatisticsSummary[i];
+        }
+
+        length = output.GetLength(0);
+
+        sb = new StringBuilder();
+
+        for (int index = 0; index < length; index++)
+            sb.AppendLine(string.Join(delimiter, output[index]));
+
+        outStream = System.IO.File.CreateText("Reports/summary.csv");
         outStream.WriteLine(sb);
         outStream.Close();
     }

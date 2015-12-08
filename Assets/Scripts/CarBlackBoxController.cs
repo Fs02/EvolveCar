@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,13 @@ public class CarBlackBoxController : MonoBehaviour
     public bool ignoreCollision = false;
     public Text indicator;
 
+//    [DBG_Track()]
+    public float Steering = 0f;
+ //   [DBG_Track()]
+    public float Gass = 0f;
+//    [DBG_Track()]
+    public float Speed = 0f;
+
     private void Awake()
     {
         m_CarController = GetComponent<CarController>();
@@ -28,7 +36,7 @@ public class CarBlackBoxController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        List<double> inputs = new List<double>();
+        List<float> inputs = new List<float>();
 
         // Forward Sensor
         RaycastHit hit = new RaycastHit();
@@ -97,17 +105,20 @@ public class CarBlackBoxController : MonoBehaviour
         if (hit.collider)
             Debug.DrawRay(sensor.position, sensor.right * hit.distance, Color.red);
 
-        inputs.Add(m_CarController.CurrentSpeed / m_CarController.MaxSpeed);
+        Speed = m_CarController.CurrentSpeed / m_CarController.MaxSpeed;
+        inputs.Add(Speed);
 
-        List<double> outputs = m_BlackBox.Process(inputs);
+        List<float> outputs = m_BlackBox.Process(inputs);
 
+        Steering = outputs[0];
+        Gass = outputs[1];
         m_CarController.Move((float)outputs[0], (float)outputs[1], (float)outputs[1], 0f);
 
         string text = "Input : ";
-        foreach (double i in inputs)
+        foreach (float i in inputs)
             text += "\n" + i;
         text += "\nOutput : ";
-        foreach (double o in outputs)
+        foreach (float o in outputs)
             text += "\n" + o;
 
         text += "\nFitness : " + LearnDirector.Instance.CurrentFitness;
@@ -118,6 +129,19 @@ public class CarBlackBoxController : MonoBehaviour
     {
         var r = GetComponent<Rigidbody>();
         r.Sleep();
+        r.WakeUp();
+        StartCoroutine(NeedReset());
+    }
+
+    IEnumerator NeedReset()
+    {
+        yield return new WaitForSeconds(0.5f);
+        if (Speed < 0.001f && Gass > 0.5f)
+        {
+            gameObject.SetActive(false);
+            gameObject.SetActive(true);
+            LearnDirector.Instance.Respawn();
+        }
     }
 
     void OnCollisionEnter(Collision collision)

@@ -6,22 +6,22 @@ namespace Artificial
 {
     public class Genome
     {
-        public List<double> m_weights;
-        public double m_fitness;
+        public List<float> m_weights;
+        public float m_fitness;
 
         public Genome()
         {
-            m_weights = new List<double>();
+            m_weights = new List<float>();
             m_fitness = 0;
         }
 
         public Genome(Genome copy)
         {
-            m_weights = new List<double>(copy.m_weights);
+            m_weights = new List<float>(copy.m_weights);
             m_fitness = copy.m_fitness;
         }
 
-        public Genome(List<double> weights, double fitness)
+        public Genome(List<float> weights, float fitness)
         {
             m_weights = weights;
             m_fitness = fitness;
@@ -33,17 +33,17 @@ namespace Artificial
         public List<Genome> m_population;
         public int m_populationSize;
         public int m_chromosomeLength;
-        public double m_totalFitness;
-        public double m_bestFitness;
-        public double m_averageFitness;
-        public double m_worstFitness;
+        public float m_totalFitness;
+        public float m_bestFitness;
+        public float m_averageFitness;
+        public float m_worstFitness;
 
         public int m_fittestGenomeId;
 
-        public double m_mutationRate = 0.1;
-        public double m_crossoverRate = 0.7;
-        public double m_generationCount;
-        public double m_maxPertubation = 0.3;
+        public float m_mutationRate = 0.1f;
+        public float m_crossoverRate = 0.7f;
+        public float m_generationCount;
+        public float m_maxPertubation = 0.3f;
         public int m_elite = 2;
         public int m_eliteCopies = 1;
 
@@ -52,7 +52,7 @@ namespace Artificial
             m_totalFitness = 0;
             m_bestFitness = 0;
             m_averageFitness = 0;
-            m_worstFitness = double.MaxValue;
+            m_worstFitness = float.MaxValue;
 
             m_population = new List<Genome>();
             for (int i = 0; i < m_populationSize; ++i)
@@ -76,8 +76,8 @@ namespace Artificial
 
         Genome GetChromoRoulette()
         {
-            double slice = (double)(Random.Range(0f, 0.999f) * m_totalFitness);
-            double fitnessSoFar = 0;
+            float slice = Random.Range(0f, 1f) * m_totalFitness;
+            float fitnessSoFar = 0;
 
             for (int i = 0; i < m_populationSize; ++i)
             {
@@ -95,8 +95,8 @@ namespace Artificial
         {
             if (Random.Range(0f, 1f) > m_crossoverRate || mum == dad)
             {
-                baby1.m_weights = new List<double>(mum.m_weights);
-                baby2.m_weights = new List<double>(dad.m_weights);
+                baby1.m_weights = new List<float>(mum.m_weights);
+                baby2.m_weights = new List<float>(dad.m_weights);
                 return;
             }
 
@@ -129,10 +129,6 @@ namespace Artificial
             if (m_elite * m_eliteCopies % 2 == 0)
             {
                 GrabNBest(m_elite, m_eliteCopies, ref newPopulation);
-                if (newPopulation[0].m_fitness != m_population[m_populationSize - 2].m_fitness)
-                    Debug.LogError("Error 1");
-                if (newPopulation[1].m_fitness != m_population[m_populationSize - 1].m_fitness)
-                    Debug.LogError("Error 2");
             }
 
             while (newPopulation.Count < m_populationSize)
@@ -161,7 +157,6 @@ namespace Artificial
             {
                 for (int i = 0; i < bestCopies; ++i)
                 {
-                    Debug.Log("best id : " + (m_populationSize - 1 - bestCount) + " | "  + m_population[m_populationSize - 1 - bestCount].m_fitness);
                     population.Add(new Genome(m_population[m_populationSize - 1 - bestCount]));
                 }
             }
@@ -170,8 +165,8 @@ namespace Artificial
         public void CalculateBestWorstAvTot()
         {
             m_totalFitness = 0;
-            double highestSoFar = 0;
-            double lowestSoFar = double.MaxValue;
+            float highestSoFar = 0;
+            float lowestSoFar = float.MaxValue;
 
             for (int i = 0; i <m_populationSize; ++i)
             {
@@ -198,7 +193,7 @@ namespace Artificial
         {
             m_totalFitness = 0;
             m_bestFitness = 0;
-            m_worstFitness = double.MaxValue;
+            m_worstFitness = float.MaxValue;
             m_averageFitness = 0;
         }
 
@@ -207,12 +202,12 @@ namespace Artificial
             return m_population;
         }
 
-        public double GetAverageFitness()
+        public float GetAverageFitness()
         {
             return m_totalFitness / m_populationSize;
         }
 
-        double GetBestFitness()
+        float GetBestFitness()
         {
             return m_bestFitness;
         }
