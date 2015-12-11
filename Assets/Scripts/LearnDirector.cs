@@ -23,6 +23,7 @@ public class LearnDirector : MonoBehaviour {
     private Artificial.GeneticAlgorithm genetic;
     private int totalWeightInNN;
     private List<Artificial.Genome> population = new List<Artificial.Genome>();
+    float elapsedTime = 0f;
 
     public float CurrentFitness
     {
@@ -40,12 +41,13 @@ public class LearnDirector : MonoBehaviour {
 
     public Text indicator;
 
-    List<string[]> StatisticsSummary = new List<string[]>();
+    List<List<string>> StatisticsSummary = new List<List<string>>();
     int respwan = 0;
 
     void Awake()
     {
         instance = this;
+        Load("Reports/0.csv");
     }
 
     void Start()
@@ -60,11 +62,11 @@ public class LearnDirector : MonoBehaviour {
         population = genetic.GetChromo();
         NextIndividu();
 
-        string[] label = new string[4];
-        label[0] = "Best fitness";
-        label[1] = "Average fitness";
-        label[2] = "Worst fitness";
-        label[3] = "Respawn";
+        List<string> label = new List<string>();
+        label.Add("Best fitness");
+        label.Add("Average fitness");
+        label.Add("Worst fitness");
+        label.Add("Respawn");
         StatisticsSummary.Add(label);
 
         Application.runInBackground = true;
@@ -82,8 +84,11 @@ public class LearnDirector : MonoBehaviour {
             "\nWorst Fit : " + genetic.m_worstFitness;
 
         timeleft -= Time.deltaTime;
+        elapsedTime += Time.deltaTime;
         if (timeleft > 0)
             return;
+        CalculateFitness();
+        elapsedTime = 0f;
 
         if (currentIndividu < populationSize)
         {
@@ -93,6 +98,14 @@ public class LearnDirector : MonoBehaviour {
         {
             NextGeneration();
         }
+    }
+
+    void CalculateFitness()
+    {
+        var wPoint = 2f;
+        var wTime = 2f;
+        population[currentIndividu - 1].m_fitness = elapsedCheckpoint.Count * wPoint + wTime / elapsedTime;
+        Debug.Log(population[currentIndividu - 1].m_fitness);
     }
 
     void NextIndividu()
@@ -115,7 +128,7 @@ public class LearnDirector : MonoBehaviour {
     void NextGeneration()
     {
         BestFitness = (float)genetic.m_bestFitness;
-        SaveStatistics("Reports/" + currentGeneration.ToString() + ".csv");
+        Save("Reports/" + currentGeneration.ToString() + ".csv");
         currentIndividu = 0;
         respwan = 0;
         ++currentGeneration;
@@ -148,12 +161,14 @@ public class LearnDirector : MonoBehaviour {
             }
             return;
         }
-        population[currentIndividu - 1].m_fitness += timeleft + maxTrialTime;
+//        population[currentIndividu - 1].m_fitness += timeleft + maxTrialTime;
         timeleft = maxTrialTime;
     }
 
     public void ReportCrash()
     {
+        CalculateFitness();
+        elapsedTime = 0f;
         if (currentIndividu < populationSize)
         {
             NextIndividu();
@@ -164,154 +179,139 @@ public class LearnDirector : MonoBehaviour {
         }
     }
 
-    void SaveStatistics(string path)
+    void Load(string path)
     {
-        List<string[]> row = new List<string[]>();
-        string[] data = new string[2];
-        data[0] = "Population Size";
-        data[1] = genetic.m_populationSize.ToString();
+        List<List<string>> dataGrid = Mono.Csv.CsvFileReader.ReadAll(path, Encoding.GetEncoding("gbk"));
+
+        // TODO: deal with data grid
+        foreach (var row in dataGrid)
+        {
+            var v = "";
+            foreach (var cell in row)
+            {
+                v += "| " + cell;
+            }
+            Debug.Log(v);
+        }
+    }
+
+    void Save(string path)
+    {
+        List<List<string>> row = new List<List<string>>();
+        List<string> data = new List<string>();
+        data.Add("Population Size");
+        data.Add(genetic.m_populationSize.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Mutation Rate";
-        data[1] = genetic.m_mutationRate.ToString();
+        data = new List<string>();
+        data.Add("Mutation Rate");
+        data.Add(genetic.m_mutationRate.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Crossover Rate";
-        data[1] = genetic.m_crossoverRate.ToString();
+        data = new List<string>();
+        data.Add("Crossover Rate");
+        data.Add(genetic.m_crossoverRate.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Pertubation";
-        data[1] = genetic.m_maxPertubation.ToString();
+        data = new List<string>();
+        data.Add("Pertubation");
+        data.Add(genetic.m_maxPertubation.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Chromosome Length";
-        data[1] = genetic.m_chromosomeLength.ToString();
+        data = new List<string>();
+        data.Add("Chromosome Length");
+        data.Add(genetic.m_chromosomeLength.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Elite";
-        data[1] = genetic.m_elite.ToString();
+        data = new List<string>();
+        data.Add("Elite");
+        data.Add(genetic.m_elite.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Elite Copies";
-        data[1] = genetic.m_eliteCopies.ToString();
+        data = new List<string>();
+        data.Add("Elite Copies");
+        data.Add(genetic.m_eliteCopies.ToString());
         row.Add(data);
-        row.Add(new string[0]);
+        row.Add(new List<string>());
 
-        data = new string[2];
-        data[0] = "Bias";
-        data[1] = carBrain.m_biass.ToString();
-        row.Add(data);
-
-        data = new string[2];
-        data[0] = "Inputs";
-        data[1] = carBrain.m_inputsCount.ToString();
+        data = new List<string>();
+        data.Add("Bias");
+        data.Add(carBrain.m_biass.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Hidden Layer";
-        data[1] = carBrain.m_hiddenLayersCount.ToString();
+        data = new List<string>();
+        data.Add("Inputs");
+        data.Add(carBrain.m_inputsCount.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Neuron Hidden Layer";
-        data[1] = carBrain.m_neuronsPerHiddenLayer.ToString();
+        data = new List<string>();
+        data.Add("Hidden Layer");
+        data.Add(carBrain.m_hiddenLayersCount.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Output";
-        data[1] = carBrain.m_outputsCount.ToString();
+        data = new List<string>();
+        data.Add("Neuron Hidden Layer");
+        data.Add(carBrain.m_neuronsPerHiddenLayer.ToString());
         row.Add(data);
 
-        data = new string[3];
-        row.Add(new string[0]);
-        data[0] = "No";
-        data[1] = "Fitness";
-        data[2] = "Chromosome";
+        data = new List<string>();
+        data.Add("Output");
+        data.Add(carBrain.m_outputsCount.ToString());
+        row.Add(data);
+
+        row.Add(new List<string>());
+        
+        data = new List<string>();
+        data.Add("No");
+        data.Add("Fitness");
+        data.Add("Chromosome");
         row.Add(data);
 
         int count = 0;
         foreach (Artificial.Genome i in genetic.m_population)
         {
-            data = new string[3];
-            data[0] = (++count).ToString();
-            data[1] = i.m_fitness.ToString();
-            data[2] = "";
+            data = new List<string>();
+            data.Add((++count).ToString());
+            data.Add(i.m_fitness.ToString());
             foreach (float c in genetic.m_population[count - 1].m_weights)
-                data[2] += c + ", ";
+                data.Add(c.ToString());
 
             row.Add(data);
         }
 
-        row.Add(new string[0]);
-        data = new string[2];
-        data[0] = "Total Fitness";
-        data[1] = genetic.m_totalFitness.ToString();
+        row.Add(new List<string>());
+
+
+        data = new List<string>();
+        data.Add("Total Fitness");
+        data.Add(genetic.m_totalFitness.ToString());
+        row.Add(data);
+        
+        data = new List<string>();
+        data.Add("Best Fitness");
+        data.Add(genetic.m_bestFitness.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Best Fitness";
-        data[1] = genetic.m_bestFitness.ToString();
+        data = new List<string>();
+        data.Add("Average Fitness");
+        data.Add(genetic.m_averageFitness.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Average Fitness";
-        data[1] = genetic.m_averageFitness.ToString();
+        data = new List<string>();
+        data.Add("Worst Fitness");
+        data.Add(genetic.m_worstFitness.ToString());
         row.Add(data);
 
-        data = new string[2];
-        data[0] = "Worst Fitness";
-        data[1] = genetic.m_worstFitness.ToString();
-        row.Add(data);
-
-        string[][] output = new string[row.Count][];
-
-        for (int i = 0; i < output.Length; i++)
-        {
-            output[i] = row[i];
-        }
-
-        int length = output.GetLength(0);
-        string delimiter = ",";
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int index = 0; index < length; index++)
-            sb.AppendLine(string.Join(delimiter, output[index]));
-
-        StreamWriter outStream = System.IO.File.CreateText(path);
-        outStream.WriteLine(sb);
-        outStream.Close();
+        Mono.Csv.CsvFileWriter.WriteAll(row, path, Encoding.GetEncoding("gbk"));
 
         // Write summary report
-        var stats = new string[4];
-        stats[0] = genetic.m_bestFitness.ToString();
-        stats[1] = genetic.m_averageFitness.ToString();
-        stats[2] = genetic.m_worstFitness.ToString();
-        stats[3] = respwan.ToString();
+        var stats = new  List<string>();
+        stats.Add(genetic.m_bestFitness.ToString());
+        stats.Add(genetic.m_averageFitness.ToString());
+        stats.Add(genetic.m_worstFitness.ToString());
+        stats.Add(respwan.ToString());
         StatisticsSummary.Add(stats);
 
-        output = new string[StatisticsSummary.Count][];
-
-        for (int i = 0; i < output.Length; i++)
-        {
-            output[i] = StatisticsSummary[i];
-        }
-
-        length = output.GetLength(0);
-
-        sb = new StringBuilder();
-
-        for (int index = 0; index < length; index++)
-            sb.AppendLine(string.Join(delimiter, output[index]));
-
-        outStream = System.IO.File.CreateText("Reports/summary.csv");
-        outStream.WriteLine(sb);
-        outStream.Close();
+        Mono.Csv.CsvFileWriter.WriteAll(StatisticsSummary, "Reports/Summary.csv", Encoding.GetEncoding("gbk"));
     }
 }
