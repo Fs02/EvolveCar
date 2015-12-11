@@ -46,7 +46,6 @@ public class CarBlackBoxController : MonoBehaviour
             var wheels = GetComponentsInChildren<WheelCollider>();
             foreach (WheelCollider wheel in wheels)
             {
-                Debug.Log("before: " + wheel.rpm);
                 wheel.brakeTorque = Mathf.Infinity;
             }
             isReset = false;
@@ -60,7 +59,6 @@ public class CarBlackBoxController : MonoBehaviour
             foreach (WheelCollider wheel in wheels)
             {
                 wheel.brakeTorque = 0;
-                Debug.Log("after : " + wheel.rpm);
             }
         }
 
