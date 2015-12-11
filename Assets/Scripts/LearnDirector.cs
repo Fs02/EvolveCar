@@ -61,7 +61,7 @@ public class LearnDirector : MonoBehaviour {
             respwan = 0;
             ++currentGeneration;
             population = genetic.Epoch(ref population);
-            NextIndividu();
+            StartCoroutine(FixedStart());
         }
         // Restart
         else
@@ -73,7 +73,6 @@ public class LearnDirector : MonoBehaviour {
             genetic.Init();
 
             population = genetic.GetChromo();
-            NextIndividu();
 
             List<string> label = new List<string>();
             label.Add("#");
@@ -82,12 +81,21 @@ public class LearnDirector : MonoBehaviour {
             label.Add("Worst fitness");
             label.Add("Respawn");
             StatisticsSummary.Add(label);
+
+            StartCoroutine(FixedStart());
         }
 
         Application.runInBackground = true;
     }
 
-    void Update()
+    IEnumerator FixedStart()
+    {
+        NextIndividu(); // avoid error
+        yield return new WaitForFixedUpdate();
+        Respawn();
+    }
+
+    void FixedUpdate()
     {
         genetic.CalculateBestWorstAvTot();
         CalculateFitness();
@@ -99,10 +107,11 @@ public class LearnDirector : MonoBehaviour {
             "\nAverage Fit : " + genetic.m_averageFitness +
             "\nWorst Fit : " + genetic.m_worstFitness;
 
-        timeleft -= Time.deltaTime;
-        elapsedTime += Time.deltaTime;
+        timeleft -= Time.fixedDeltaTime;
+        elapsedTime += Time.fixedDeltaTime;
         if (timeleft > 0)
             return;
+        CalculateFitness();
 
         if (currentIndividu < populationSize)
         {
@@ -158,7 +167,15 @@ public class LearnDirector : MonoBehaviour {
         carBrain.transform.position = start.position;
         carBrain.transform.rotation = start.rotation;
         carBrain.GetComponent<CarBlackBoxController>().Reset();
+
+        foreach (Checkpoint c in elapsedCheckpoint)
+        {
+            c.gameObject.SetActive(true);
+        }
+        elapsedCheckpoint.Clear();
+
         timeleft = maxTrialTime;
+        elapsedTime = 0f;
     }
 
     public void ReportCheckPoint(Checkpoint checkpoint, bool last=false)
