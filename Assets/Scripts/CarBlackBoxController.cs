@@ -13,6 +13,7 @@ public class CarBlackBoxController : MonoBehaviour
     private CarController m_CarController;    // Reference to actual car controller we are controlling
     private Artificial.NeuralNetwork m_BlackBox;
     private Rigidbody m_Rigidbody;
+    public bool isReset = true;
 
     public float sight = 25f;
     public Transform sensor;
@@ -36,6 +37,33 @@ public class CarBlackBoxController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isReset)
+        {
+            // reset all forces
+            m_Rigidbody = GetComponent<Rigidbody>();
+            m_Rigidbody.isKinematic = true;
+
+            var wheels = GetComponentsInChildren<WheelCollider>();
+            foreach (WheelCollider wheel in wheels)
+            {
+                Debug.Log("before: " + wheel.rpm);
+                wheel.brakeTorque = Mathf.Infinity;
+            }
+            isReset = false;
+            return;
+        }
+        
+        if (m_Rigidbody.isKinematic)
+        {
+            m_Rigidbody.isKinematic = false;
+            var wheels = GetComponentsInChildren<WheelCollider>();
+            foreach (WheelCollider wheel in wheels)
+            {
+                wheel.brakeTorque = 0;
+                Debug.Log("after : " + wheel.rpm);
+            }
+        }
+
         List<float> inputs = new List<float>();
 
         // Forward Sensor
@@ -127,9 +155,7 @@ public class CarBlackBoxController : MonoBehaviour
 
     public void Reset()
     {
-        var r = GetComponent<Rigidbody>();
-        r.Sleep();
-        r.WakeUp();
+        isReset = true;
         StartCoroutine(NeedReset());
     }
 

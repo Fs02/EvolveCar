@@ -54,7 +54,7 @@ namespace Artificial
             CreateNet();
         }
 
-        void CreateNet()
+        public void CreateNet()
         {
             m_layers = new List<NeuronLayer>();
             if (m_hiddenLayersCount > 0)

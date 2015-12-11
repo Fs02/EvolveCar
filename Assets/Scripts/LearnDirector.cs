@@ -34,7 +34,7 @@ public class LearnDirector : MonoBehaviour {
     public float BestFitness = 0;
 
     private int currentIndividu = 0;
-    private int currentGeneration = 0;
+    private int currentGeneration = 1;
     private float timeleft = 10f;
 
     private List<Checkpoint> elapsedCheckpoint = new List<Checkpoint>();
@@ -47,27 +47,42 @@ public class LearnDirector : MonoBehaviour {
     void Awake()
     {
         instance = this;
-        Load("Reports/0.csv");
     }
 
     void Start()
     {
         genetic = GetComponent<Artificial.GeneticAlgorithm>();
-        totalWeightInNN = carBrain.GetComponent<Artificial.NeuralNetwork>().GetWeightsCount();
-        
-        genetic.m_chromosomeLength = totalWeightInNN;
-        genetic.m_populationSize = populationSize;
-        genetic.Init();
 
-        population = genetic.GetChromo();
-        NextIndividu();
+        // Resume
+        if (File.Exists("Reports/summary.csv"))
+        {
+            Load();
+            currentIndividu = 0;
+            respwan = 0;
+            ++currentGeneration;
+            population = genetic.Epoch(ref population);
+            NextIndividu();
+        }
+        // Restart
+        else
+        {
+            totalWeightInNN = carBrain.GetWeightsCount();
 
-        List<string> label = new List<string>();
-        label.Add("Best fitness");
-        label.Add("Average fitness");
-        label.Add("Worst fitness");
-        label.Add("Respawn");
-        StatisticsSummary.Add(label);
+            genetic.m_chromosomeLength = totalWeightInNN;
+            genetic.m_populationSize = populationSize;
+            genetic.Init();
+
+            population = genetic.GetChromo();
+            NextIndividu();
+
+            List<string> label = new List<string>();
+            label.Add("#");
+            label.Add("Best fitness");
+            label.Add("Average fitness");
+            label.Add("Worst fitness");
+            label.Add("Respawn");
+            StatisticsSummary.Add(label);
+        }
 
         Application.runInBackground = true;
     }
@@ -75,6 +90,7 @@ public class LearnDirector : MonoBehaviour {
     void Update()
     {
         genetic.CalculateBestWorstAvTot();
+        CalculateFitness();
         indicator.text =
             "Generation : " + currentGeneration +
             "\nIndividu : " + currentIndividu +
@@ -87,8 +103,6 @@ public class LearnDirector : MonoBehaviour {
         elapsedTime += Time.deltaTime;
         if (timeleft > 0)
             return;
-        CalculateFitness();
-        elapsedTime = 0f;
 
         if (currentIndividu < populationSize)
         {
@@ -110,12 +124,11 @@ public class LearnDirector : MonoBehaviour {
 
     void NextIndividu()
     {
-        carBrain.GetComponent<CarBlackBoxController>().Reset();
         carBrain.transform.position = start.position;
         carBrain.transform.rotation = start.rotation;
+        carBrain.GetComponent<CarBlackBoxController>().Reset();
         carBrain.PutWeights(population[currentIndividu].m_weights);
         population[currentIndividu].m_fitness = 0;
-        timeleft = maxTrialTime;
         ++currentIndividu;
 
         foreach (Checkpoint c in elapsedCheckpoint)
@@ -123,12 +136,14 @@ public class LearnDirector : MonoBehaviour {
             c.gameObject.SetActive(true);
         }
         elapsedCheckpoint.Clear();
+        timeleft = maxTrialTime;
+        elapsedTime = 0f;
     }
 
     void NextGeneration()
     {
-        BestFitness = (float)genetic.m_bestFitness;
-        Save("Reports/" + currentGeneration.ToString() + ".csv");
+        BestFitness = genetic.m_bestFitness;
+        Save();
         currentIndividu = 0;
         respwan = 0;
         ++currentGeneration;
@@ -140,9 +155,9 @@ public class LearnDirector : MonoBehaviour {
     {
         Debug.LogWarning("Respawn");
         respwan++;
-        carBrain.GetComponent<CarBlackBoxController>().Reset();
         carBrain.transform.position = start.position;
         carBrain.transform.rotation = start.rotation;
+        carBrain.GetComponent<CarBlackBoxController>().Reset();
         timeleft = maxTrialTime;
     }
 
@@ -168,7 +183,6 @@ public class LearnDirector : MonoBehaviour {
     public void ReportCrash()
     {
         CalculateFitness();
-        elapsedTime = 0f;
         if (currentIndividu < populationSize)
         {
             NextIndividu();
@@ -179,23 +193,47 @@ public class LearnDirector : MonoBehaviour {
         }
     }
 
-    void Load(string path)
+    void Load()
     {
-        List<List<string>> dataGrid = Mono.Csv.CsvFileReader.ReadAll(path, Encoding.GetEncoding("gbk"));
+        StatisticsSummary = Mono.Csv.CsvFileReader.ReadAll("Reports/summary.csv", Encoding.GetEncoding("gbk"));
+        currentGeneration = int.Parse(StatisticsSummary[StatisticsSummary.Count - 1][0]);
+        var data = Mono.Csv.CsvFileReader.ReadAll("Reports/" + currentGeneration + ".csv", Encoding.GetEncoding("gbk"));
 
-        // TODO: deal with data grid
-        foreach (var row in dataGrid)
+        // Restore GA
+        genetic.m_populationSize = int.Parse(data[0][1]);
+        genetic.m_mutationRate = float.Parse(data[1][1]);
+        genetic.m_crossoverRate = float.Parse(data[2][1]);
+        genetic.m_maxPertubation = float.Parse(data[3][1]);
+        genetic.m_chromosomeLength = int.Parse(data[4][1]);
+        genetic.m_elite = int.Parse(data[5][1]);
+        genetic.m_eliteCopies = int.Parse(data[6][1]);
+        genetic.Init();
+        genetic.m_totalFitness = float.Parse(data[7][1]);
+        genetic.m_bestFitness = float.Parse(data[8][1]);
+        genetic.m_averageFitness = float.Parse(data[9][1]);
+        genetic.m_worstFitness = float.Parse(data[10][1]);
+
+        // Restore networks
+        carBrain.m_biass = int.Parse(data[12][1]);
+        carBrain.m_inputsCount = int.Parse(data[13][1]);
+        carBrain.m_hiddenLayersCount = int.Parse(data[14][1]);
+        carBrain.m_neuronsPerHiddenLayer = int.Parse(data[15][1]);
+        carBrain.m_outputsCount = int.Parse(data[16][1]);
+        carBrain.CreateNet();
+
+        // Restore population
+        for (int i = 19; i < 19 + genetic.m_populationSize; ++i)
         {
-            var v = "";
-            foreach (var cell in row)
+            var weights = new List<float>();
+            for (int j = 0; j < genetic.m_chromosomeLength; ++j)
             {
-                v += "| " + cell;
+                weights.Add(float.Parse(data[i][j + 2]));
             }
-            Debug.Log(v);
+            population.Add(new Artificial.Genome(weights, float.Parse(data[i][1])));
         }
     }
 
-    void Save(string path)
+    void Save()
     {
         List<List<string>> row = new List<List<string>>();
         List<string> data = new List<string>();
@@ -232,6 +270,27 @@ public class LearnDirector : MonoBehaviour {
         data.Add("Elite Copies");
         data.Add(genetic.m_eliteCopies.ToString());
         row.Add(data);
+
+        data = new List<string>();
+        data.Add("Total Fitness");
+        data.Add(genetic.m_totalFitness.ToString());
+        row.Add(data);
+
+        data = new List<string>();
+        data.Add("Best Fitness");
+        data.Add(genetic.m_bestFitness.ToString());
+        row.Add(data);
+
+        data = new List<string>();
+        data.Add("Average Fitness");
+        data.Add(genetic.m_averageFitness.ToString());
+        row.Add(data);
+
+        data = new List<string>();
+        data.Add("Worst Fitness");
+        data.Add(genetic.m_worstFitness.ToString());
+        row.Add(data);
+
         row.Add(new List<string>());
 
         data = new List<string>();
@@ -281,37 +340,17 @@ public class LearnDirector : MonoBehaviour {
 
         row.Add(new List<string>());
 
-
-        data = new List<string>();
-        data.Add("Total Fitness");
-        data.Add(genetic.m_totalFitness.ToString());
-        row.Add(data);
-        
-        data = new List<string>();
-        data.Add("Best Fitness");
-        data.Add(genetic.m_bestFitness.ToString());
-        row.Add(data);
-
-        data = new List<string>();
-        data.Add("Average Fitness");
-        data.Add(genetic.m_averageFitness.ToString());
-        row.Add(data);
-
-        data = new List<string>();
-        data.Add("Worst Fitness");
-        data.Add(genetic.m_worstFitness.ToString());
-        row.Add(data);
-
-        Mono.Csv.CsvFileWriter.WriteAll(row, path, Encoding.GetEncoding("gbk"));
+        Mono.Csv.CsvFileWriter.WriteAll(row, "Reports/" + currentGeneration.ToString() + ".csv", Encoding.GetEncoding("gbk"));
 
         // Write summary report
-        var stats = new  List<string>();
+        var stats = new List<string>();
+        stats.Add(currentGeneration.ToString());
         stats.Add(genetic.m_bestFitness.ToString());
         stats.Add(genetic.m_averageFitness.ToString());
         stats.Add(genetic.m_worstFitness.ToString());
         stats.Add(respwan.ToString());
         StatisticsSummary.Add(stats);
 
-        Mono.Csv.CsvFileWriter.WriteAll(StatisticsSummary, "Reports/Summary.csv", Encoding.GetEncoding("gbk"));
+        Mono.Csv.CsvFileWriter.WriteAll(StatisticsSummary, "Reports/summary.csv", Encoding.GetEncoding("gbk"));
     }
 }
