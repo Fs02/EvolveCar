@@ -61,7 +61,7 @@ public class LearnDirector : MonoBehaviour {
             respwan = 0;
             ++currentGeneration;
             population = genetic.Epoch(ref population);
-            StartCoroutine(FixedStart());
+            StartCoroutine(Next());
         }
         // Restart
         else
@@ -82,13 +82,13 @@ public class LearnDirector : MonoBehaviour {
             label.Add("Respawn");
             StatisticsSummary.Add(label);
 
-            StartCoroutine(FixedStart());
+            StartCoroutine(Next());
         }
 
         Application.runInBackground = true;
     }
 
-    IEnumerator FixedStart()
+    IEnumerator Next()
     {
         NextIndividu(); // avoid error
         yield return new WaitForFixedUpdate();
@@ -115,7 +115,7 @@ public class LearnDirector : MonoBehaviour {
 
         if (currentIndividu < populationSize)
         {
-            NextIndividu();
+            StartCoroutine(Next());
         }
         else
         {
@@ -128,7 +128,6 @@ public class LearnDirector : MonoBehaviour {
         var wPoint = 2f;
         var wTime = 2f;
         population[currentIndividu - 1].m_fitness = elapsedCheckpoint.Count * wPoint + wTime / elapsedTime;
-        Debug.Log(population[currentIndividu - 1].m_fitness);
     }
 
     void NextIndividu()
@@ -157,7 +156,7 @@ public class LearnDirector : MonoBehaviour {
         respwan = 0;
         ++currentGeneration;
         population = genetic.Epoch(ref population);
-        NextIndividu();
+        StartCoroutine(Next());
     }
 
     public void Respawn()
@@ -185,7 +184,7 @@ public class LearnDirector : MonoBehaviour {
         {
             if (currentIndividu < populationSize)
             {
-                NextIndividu();
+                StartCoroutine(Next());
             }
             else
             {
@@ -202,7 +201,7 @@ public class LearnDirector : MonoBehaviour {
         CalculateFitness();
         if (currentIndividu < populationSize)
         {
-            NextIndividu();
+            StartCoroutine(Next());
         }
         else
         {
