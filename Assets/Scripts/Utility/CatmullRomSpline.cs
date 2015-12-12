@@ -9,6 +9,7 @@ namespace Utility
     /// 	- Class for describing and drawing Centripetal Catmull-rom Spline
     /// 	- Efficiently handles approximate length calculation through 'dirty' system
     /// 	- Has static functions for getting points on curves constructed by Vector3 parameters (GetPoint, GetCubicPoint, GetQuadraticPoint, and GetLinearPoint)
+    /// 	- Modified version of Bezier Curve : https://www.assetstore.unity3d.com/en/#!/content/11278
     /// </summary>
     [ExecuteInEditMode]
     [Serializable]
@@ -102,6 +103,21 @@ namespace Utility
         /// 	- The approximate length of the curve
         /// 	- recalculates if the curve is "dirty"
         /// </summary>
+        private List<float> _segmentsLength = new List<float>();
+        public List<float> segmentsLength
+        {
+            get
+            {
+                if (dirty)
+                {
+                    PreCalculateLength();
+                    dirty = false;
+                }
+
+                return _segmentsLength;
+            }
+        }
+
         private float _length;
         public float length
         {
@@ -109,23 +125,37 @@ namespace Utility
             {
                 if (dirty)
                 {
-                    _length = 0;
-                    for (int i = 0; i < points.Length - 3; i++)
-                    {
-                        _length += ApproximateLength(points[i], points[i + 1], points[i + 2], points[i + 3], resolution);
-                    }
-
-                    if (close)
-                    {
-                        _length += ApproximateLength(points[points.Length - 1], points[0], points[1], points[2], resolution);
-                        _length += ApproximateLength(points[points.Length - 2], points[points.Length - 1], points[0], points[1], resolution);
-                        _length += ApproximateLength(points[points.Length - 3], points[points.Length - 2], points[points.Length - 1], points[0], resolution);
-                    }
-
+                    PreCalculateLength();
                     dirty = false;
                 }
 
                 return _length;
+            }
+        }
+
+        void PreCalculateLength()
+        {
+            _segmentsLength.Clear();
+            _length = 0;
+
+            if (close)
+            {
+                _segmentsLength.Add(ApproximateLength(points[points.Length - 1], points[0], points[1], points[2], resolution));
+                _length += _segmentsLength[_segmentsLength.Count - 1];
+            }
+
+            for (int i = 0; i < points.Length - 3; i++)
+            {
+                _segmentsLength.Add(ApproximateLength(points[i], points[i + 1], points[i + 2], points[i + 3], resolution));
+                _length += _segmentsLength[_segmentsLength.Count - 1];
+            }
+
+            if (close)
+            {
+                _segmentsLength.Add(ApproximateLength(points[points.Length - 2], points[points.Length - 1], points[0], points[1], resolution));
+                _length += _segmentsLength[_segmentsLength.Count - 1];
+                _segmentsLength.Add(ApproximateLength(points[points.Length - 3], points[points.Length - 2], points[points.Length - 1], points[0], resolution));
+                _length += _segmentsLength[_segmentsLength.Count - 1];
             }
         }
 
@@ -405,8 +435,6 @@ namespace Utility
             for (int i = 1; i < limit; i++)
             {
                 currentPoint = GetPoint(p0, p1, p2, p3, i / _res);
-                if (i % 2 == 0) Gizmos.color = Color.blue;
-                else Gizmos.color = Color.green;
                 Gizmos.DrawLine(lastPoint, currentPoint);
                 lastPoint = currentPoint;
             }
@@ -523,6 +551,50 @@ namespace Utility
             return total;
         }
         #endregion
+
+        /*
+    	public Vector3 GetPointAtDistance(float distance)
+        {
+    		if(close)
+    		{
+    			if(distance < 0) while(distance < 0) { distance += length; }
+    			else if(distance > length) while(distance > length) { distance -= length; }
+    		}		
+    		else
+    		{
+    			if(distance <= 0) return points[0].position;
+    			else if(distance >= length) return points[points.Length - 1].position;
+    		}
+		
+    		float totalLength = 0;
+    		float curveLength = 0;
+    		
+    		BezierPoint firstPoint = null;
+    		BezierPoint secondPoint = null;
+		
+    		for(int i = 0; i < points.Length - 1; i++)
+    		{
+    			curveLength = ApproximateLength(points[i], points[i + 1], resolution);
+    			if(totalLength + curveLength >= distance)
+    			{
+    				firstPoint = points[i];
+    				secondPoint = points[i+1];
+    				break;
+    			}
+    			else totalLength += curveLength;
+    		}
+    		
+    		if(firstPoint == null)
+    		{
+    			firstPoint = points[points.Length - 1];
+    			secondPoint = points[0];
+    			curveLength = ApproximateLength(firstPoint, secondPoint, resolution);
+    		}
+    		
+    		distance -= totalLength;
+            return GetPoint(firstPoint, secondPoint, distance / curveLength);
+    	}
+        */
 
         /*
         * Compute coefficients for a cubic polynomial

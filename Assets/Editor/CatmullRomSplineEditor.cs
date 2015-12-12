@@ -4,6 +4,7 @@ using System.Collections;
 
 namespace Utility
 {
+    // Modified version of Bezier Curve : https://www.assetstore.unity3d.com/en/#!/content/11278
     [CustomEditor(typeof(CatmullRomSpline))]
     public class CatmullRomSplineEditor : Editor
     {
@@ -49,7 +50,10 @@ namespace Utility
                     GameObject pointObject = new GameObject("Point " + pointsProp.arraySize);
                     Undo.RecordObject(pointObject, "Add Point");
                     pointObject.transform.parent = spline.transform;
-                    pointObject.transform.localPosition = Vector3.zero;
+                    if (spline.pointCount > 0)
+                        pointObject.transform.localPosition = spline.points[spline.pointCount -1].localPosition;
+                    else
+                        pointObject.transform.localPosition = Vector3.zero;
                     CatmullRomPoint newPoint = pointObject.AddComponent<CatmullRomPoint>();
 
                     newPoint.spline = spline;
