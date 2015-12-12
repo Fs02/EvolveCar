@@ -211,9 +211,9 @@ public class LearnDirector : MonoBehaviour {
 
     void Load()
     {
-        StatisticsSummary = Mono.Csv.CsvFileReader.ReadAll("Reports/summary.csv", Encoding.ASCII);
+        StatisticsSummary = Utility.CsvFileReader.ReadAll("Reports/summary.csv", Encoding.ASCII);
         currentGeneration = int.Parse(StatisticsSummary[StatisticsSummary.Count - 1][0]);
-        var data = Mono.Csv.CsvFileReader.ReadAll("Reports/" + currentGeneration + ".csv", Encoding.ASCII);
+        var data = Utility.CsvFileReader.ReadAll("Reports/" + currentGeneration + ".csv", Encoding.ASCII);
 
         // Restore GA
         genetic.m_populationSize = int.Parse(data[0][1]);
@@ -356,7 +356,7 @@ public class LearnDirector : MonoBehaviour {
 
         row.Add(new List<string>());
 
-        Mono.Csv.CsvFileWriter.WriteAll(row, "Reports/" + currentGeneration.ToString() + ".csv", Encoding.ASCII);
+        Utility.CsvFileWriter.WriteAll(row, "Reports/" + currentGeneration.ToString() + ".csv", Encoding.ASCII);
 
         // Write summary report
         var stats = new List<string>();
@@ -367,6 +367,6 @@ public class LearnDirector : MonoBehaviour {
         stats.Add(respwan.ToString());
         StatisticsSummary.Add(stats);
 
-        Mono.Csv.CsvFileWriter.WriteAll(StatisticsSummary, "Reports/summary.csv", Encoding.ASCII);
+        Utility.CsvFileWriter.WriteAll(StatisticsSummary, "Reports/summary.csv", Encoding.ASCII);
     }
 }

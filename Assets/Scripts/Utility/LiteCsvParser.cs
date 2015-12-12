@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 using System.Diagnostics;
 
-namespace Mono.Csv
+namespace Utility
 {
 
     /// <summary>
