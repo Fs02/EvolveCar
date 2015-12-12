@@ -110,12 +110,17 @@ namespace Utility
                 if (dirty)
                 {
                     _length = 0;
-                    for (int i = 0; i < points.Length - 1; i++)
+                    for (int i = 0; i < points.Length - 3; i++)
                     {
-//                        _length += ApproximateLength(points[i], points[i + 1], resolution);
+                        _length += ApproximateLength(points[i], points[i + 1], points[i + 2], points[i + 3], resolution);
                     }
 
-//                    if (close) _length += ApproximateLength(points[points.Length - 1], points[0], resolution);
+                    if (close)
+                    {
+                        _length += ApproximateLength(points[points.Length - 1], points[0], points[1], points[2], resolution);
+                        _length += ApproximateLength(points[points.Length - 2], points[points.Length - 1], points[0], points[1], resolution);
+                        _length += ApproximateLength(points[points.Length - 3], points[points.Length - 2], points[points.Length - 1], points[0], resolution);
+                    }
 
                     dirty = false;
                 }
@@ -239,7 +244,6 @@ namespace Utility
         /// 	- Value between 0 and 1 representing the percent along the curve (0 = 0%, 1 = 100%)
         /// </param>
         ///
-        /*
         public Vector3 GetPointAt(float t)
         {
             if (t <= 0) return points[0].position;
@@ -248,16 +252,20 @@ namespace Utility
             float totalPercent = 0;
             float curvePercent = 0;
 
-            BezierPoint p1 = null;
-            BezierPoint p2 = null;
+            CatmullRomPoint p0 = null;
+            CatmullRomPoint p1 = null;
+            CatmullRomPoint p2 = null;
+            CatmullRomPoint p3 = null;
 
-            for (int i = 0; i < points.Length - 1; i++)
+            for (int i = 0; i < points.Length - 3; i++)
             {
-                curvePercent = ApproximateLength(points[i], points[i + 1], resolution) / length;
+                curvePercent = ApproximateLength(points[i], points[i + 1], points[i + 2], points[i + 3], resolution) / length;
                 if (totalPercent + curvePercent > t)
                 {
-                    p1 = points[i];
-                    p2 = points[i + 1];
+                    p0 = points[i];
+                    p1 = points[i + 1];
+                    p2 = points[i + 2];
+                    p3 = points[i + 3];
                     break;
                 }
 
@@ -270,13 +278,10 @@ namespace Utility
                 p2 = points[0];
             }
 
-            Debug.Log("T : " + t);
-            Debug.Log("Total Percent : " + totalPercent);
             t -= totalPercent;
 
-            return GetPoint(p1, p2, t / curvePercent);
+            return GetPoint(p0, p1, p2, p3, t / curvePercent);
         }
-         */
 
         /// <summary>
         /// 	- Get the index of the given point in this curve
@@ -337,6 +342,8 @@ namespace Utility
             for (int i = 1; i < limit; i++)
             {
                 currentPoint = GetPoint(p0, p1, p2, p3, i / _res);
+                if (i % 2 == 0) Gizmos.color = Color.blue;
+                else Gizmos.color = Color.green;
                 Gizmos.DrawLine(lastPoint, currentPoint);
                 lastPoint = currentPoint;
             }
@@ -436,8 +443,7 @@ namespace Utility
         /// 	- The number of points along the curve used to create measurable segments
         /// </param>
         /// 
-        /*
-        public static float ApproximateLength(BezierPoint p1, BezierPoint p2, int resolution = 10)
+        public static float ApproximateLength(CatmullRomPoint p0, CatmullRomPoint p1, CatmullRomPoint p2, CatmullRomPoint p3, int resolution = 10)
         {
             float _res = resolution;
             float total = 0;
@@ -446,14 +452,13 @@ namespace Utility
 
             for (int i = 0; i < resolution + 1; i++)
             {
-                currentPosition = GetPoint(p1, p2, i / _res);
+                currentPosition = GetPoint(p0, p1, p2, p3, i / _res);
                 total += (currentPosition - lastPosition).magnitude;
                 lastPosition = currentPosition;
             }
 
             return total;
         }
-        */
         #endregion
 
         /*
