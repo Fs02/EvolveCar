@@ -315,10 +315,23 @@ namespace Utility
 
         public Vector3 GetClosestPoint(Vector3 point, int resolution = 10)
         {
+            float distance;
+            return GetClosestPoint(point, out distance, resolution);
+        }
+
+        public Vector3 GetClosestPoint(Vector3 point, out float distance, int resolution = 10)
+        {
+            int start = 1;
+            int end = 2;
+            if (close)
+            {
+                start = 0;
+                end = 1;
+            }
             // find closest segment
-            int closest = 1;
+            int closest = start;
             float closestSqrDist = float.MaxValue;
-            for (int i = 1; i < points.Length - 2; ++i)
+            for (int i = start; i < points.Length - end; ++i)
             {
                 var segmentPost = (points[i].position + points[i + 1].position)/2f;
                 var segmentSqrDist = Vector3.SqrMagnitude(point - segmentPost);
@@ -328,11 +341,16 @@ namespace Utility
                     closestSqrDist = segmentSqrDist;
                 }
             }
+            // calculate distance up to the point
+            distance = 0f;
+            for (int i = start; i < closest; ++i)
+                distance += segmentsLength[i];
+
             // find closest point
-            var p0 = points[closest - 1];
+            var p0 = points[closest == 0 ? pointCount - 1 : closest - 1];
             var p1 = points[closest];
-            var p2 = points[closest + 1];
-            var p3 = points[closest + 2];
+            var p2 = points[closest == pointCount - 2 ? 0 : closest + 1];
+            var p3 = points[closest == pointCount - 2 ? 1 : closest + 2];
             var lastpos = points[closest].position;
             var lastdis = Vector3.SqrMagnitude(point - lastpos);
             for (int i = 1; i <= resolution; ++i )
@@ -342,6 +360,7 @@ namespace Utility
                 if (curdis > lastdis)
                     break;
 
+                distance += Vector3.Distance(curpos, lastpos);
                 lastpos = curpos;
                 lastdis = curdis;
             }
