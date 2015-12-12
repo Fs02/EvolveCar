@@ -99,7 +99,21 @@ namespace Artificial
                 baby2.m_weights = new List<float>(dad.m_weights);
                 return;
             }
-
+            // Uniform crossover
+            for (int i = 0; i < mum.m_weights.Count; ++i)
+            { 
+                if (Random.Range(0f, 1f) > 0.5f)
+                {
+                    baby1.m_weights.Add(mum.m_weights[i]);
+                    baby2.m_weights.Add(dad.m_weights[i]);
+                }
+                else
+                {
+                    baby1.m_weights.Add(dad.m_weights[i]);
+                    baby2.m_weights.Add(mum.m_weights[i]);
+                }
+            }
+            /*
             int cp = Random.Range(0, m_chromosomeLength - 1);
 
             for (int i = 0; i < cp; ++i)
@@ -113,6 +127,7 @@ namespace Artificial
                 baby1.m_weights.Add(dad.m_weights[i]);
                 baby2.m_weights.Add(mum.m_weights[i]);
             }
+            */
 
             return;
         }

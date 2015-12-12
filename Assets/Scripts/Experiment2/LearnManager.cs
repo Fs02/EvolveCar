@@ -181,15 +181,6 @@ namespace EvolveCar.Experiment2
             time = 0f;
         }
 
-        public void ReportDistance(float _distance)
-        {
-            if (distance < _distance)
-            {
-                distance = _distance;
-                timeleft = maxTrialTime;
-            }
-        }
-
         public void ReportCrash()
         {
             CalculateFitness();
