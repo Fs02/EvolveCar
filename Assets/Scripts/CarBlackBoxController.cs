@@ -46,7 +46,7 @@ public class CarBlackBoxController : MonoBehaviour
             var wheels = GetComponentsInChildren<WheelCollider>();
             foreach (WheelCollider wheel in wheels)
             {
-                wheel.brakeTorque = Mathf.Infinity;
+                wheel.brakeTorque = float.MaxValue;
             }
             isReset = false;
             return;
