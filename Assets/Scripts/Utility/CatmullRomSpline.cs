@@ -283,6 +283,69 @@ namespace Utility
             return GetPoint(p0, p1, p2, p3, t / curvePercent);
         }
 
+        public Vector3 GetClosestPoint(Vector3 point, int resolution = 10)
+        {
+            // find closest segment
+            int closest = 1;
+            float closestSqrDist = float.MaxValue;
+            for (int i = 1; i < points.Length - 2; ++i)
+            {
+                var segmentPost = (points[i].position + points[i + 1].position)/2f;
+                var segmentSqrDist = Vector3.SqrMagnitude(point - segmentPost);
+                if (segmentSqrDist < closestSqrDist)
+                {
+                    closest = i;
+                    closestSqrDist = segmentSqrDist;
+                }
+            }
+            // find closest point
+            var p0 = points[closest - 1];
+            var p1 = points[closest];
+            var p2 = points[closest + 1];
+            var p3 = points[closest + 2];
+            var lastpos = points[closest].position;
+            var lastdis = Vector3.SqrMagnitude(point - lastpos);
+            for (int i = 1; i <= resolution; ++i )
+            {
+                var curpos = GetPoint(p0, p1, p2, p3, i/(float)resolution);
+                var curdis = Vector3.SqrMagnitude(point - curpos);
+                if (curdis > lastdis)
+                    break;
+
+                lastpos = curpos;
+                lastdis = curdis;
+            }
+            return lastpos;
+
+            /*
+            float error = float.MaxValue;
+            var point0 = points[closestSegment].position;
+            var t = 0f;
+            var l = 0.5f;
+            var p0 = points[closestSegment - 1];
+            var p1 = points[closestSegment];
+            var p2 = points[closestSegment + 1];
+            var p3 = points[closestSegment + 2];
+            while (error > 0.5f)
+            {
+                var point1 = GetPoint(p0, p1, p2, p3, t + l);
+                var sDist0 = Vector3.SqrMagnitude(point - point0);
+                var sDist1 = Vector3.SqrMagnitude(point - point1);
+                error = Vector3.SqrMagnitude(point1 - point0);
+                if (sDist1 < sDist0)
+                {
+                    t = t + l;
+                    point0 = point1;
+                }
+                else
+                {
+                    l /= 2f;
+                }
+            }
+            return point0;
+            */
+        }
+
         /// <summary>
         /// 	- Get the index of the given point in this curve
         /// </summary>
