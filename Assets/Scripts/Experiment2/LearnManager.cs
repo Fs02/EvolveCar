@@ -47,6 +47,7 @@ namespace EvolveCar.Experiment2
         float time = 0f;
         float distance = 0f;
         bool finish = false;
+        bool isFixedNext = false;
 
         public float CurrentFitness
         {
@@ -118,9 +119,14 @@ namespace EvolveCar.Experiment2
 
         IEnumerator FixedNext()
         {
-            NextIndividu(); // avoid error
-            yield return new WaitForFixedUpdate();
-            Respawn();
+            if (!isFixedNext)
+            {
+                isFixedNext = true;
+                NextIndividu(); // avoid error
+                yield return new WaitForFixedUpdate();
+                Respawn();
+                isFixedNext = false;
+            }
         }
 
         void FixedUpdate()
