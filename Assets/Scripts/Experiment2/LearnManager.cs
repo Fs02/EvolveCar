@@ -33,7 +33,6 @@ namespace EvolveCar.Experiment2
             get { return instance; }
         }
 
-        public float TimeScale = 1f;
         public Transform start;
         public Utility.CatmullRomSpline track;
         public Artificial.NeuralNetwork carBrain;
@@ -62,6 +61,7 @@ namespace EvolveCar.Experiment2
         private float timeleft = 2f;
 
         public Text indicator;
+        public Text timeIndicator;
 
         List<List<string>> StatisticsSummary = new List<List<string>>();
         int respwan = 0;
@@ -114,7 +114,6 @@ namespace EvolveCar.Experiment2
             }
 
             Application.runInBackground = true;
-            Time.timeScale = TimeScale;
         }
 
         IEnumerator FixedNext()
@@ -159,6 +158,34 @@ namespace EvolveCar.Experiment2
             {
                 NextGeneration();
             }
+        }
+
+        void Update()
+        {
+            if (Input.GetKeyUp(KeyCode.BackQuote))
+                Time.timeScale = 1f;
+            else if (Input.GetKeyUp(KeyCode.Alpha1))
+                Time.timeScale = 10f;
+            else if (Input.GetKeyUp(KeyCode.Alpha2))
+                Time.timeScale = 20f;
+            else if (Input.GetKeyUp(KeyCode.Alpha3))
+                Time.timeScale = 30f;
+            else if (Input.GetKeyUp(KeyCode.Alpha4))
+                Time.timeScale = 40f;
+            else if (Input.GetKeyUp(KeyCode.Alpha5))
+                Time.timeScale = 50f;
+            else if (Input.GetKeyUp(KeyCode.Alpha6))
+                Time.timeScale = 60f;
+            else if (Input.GetKeyUp(KeyCode.Alpha7))
+                Time.timeScale = 70f;
+            else if (Input.GetKeyUp(KeyCode.Alpha8))
+                Time.timeScale = 80f;
+            else if (Input.GetKeyUp(KeyCode.Alpha9))
+                Time.timeScale = 90f;
+            else if (Input.GetKeyUp(KeyCode.Alpha0))
+                Time.timeScale = 100f;
+
+            timeIndicator.text = Time.timeScale + "X";
         }
 
         void CalculateFitness()
