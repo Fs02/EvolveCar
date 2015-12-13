@@ -131,6 +131,9 @@ namespace EvolveCar.Experiment2
 
         void FixedUpdate()
         {
+            if (isFixedNext)
+                return;
+
             timeleft -= Time.fixedDeltaTime;
             time += Time.fixedDeltaTime;
             CalculateFitness();
@@ -199,7 +202,7 @@ namespace EvolveCar.Experiment2
             var elapsedTime = time;
             if (elapsedTime == 0) elapsedTime = 1f;
             population[currentIndividu - 1].m_fitness = distance + 10 * distance / elapsedTime;
-            statistics[currentIndividu - 1] = new RunStatistics(distance, time, finish);
+            statistics[currentIndividu - 1] = new RunStatistics(distance, elapsedTime, finish);
         }
 
         void NextIndividu()
@@ -226,11 +229,12 @@ namespace EvolveCar.Experiment2
             ++currentGeneration;
             population = genetic.Epoch(ref population);
             StartCoroutine(FixedNext());
+            Debug.LogWarning("Generation : " + currentGeneration);
         }
 
         public void Respawn()
         {
-            Debug.LogWarning("Respawn");
+            Debug.Log("Respawn");
             respwan++;
             carBrain.transform.position = start.position;
             carBrain.transform.rotation = start.rotation;
