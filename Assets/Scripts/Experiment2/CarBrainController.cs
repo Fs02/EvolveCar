@@ -66,7 +66,7 @@ namespace EvolveCar.Experiment2 {
             }
 
             var sqrDistanceToNextPoint = Vector3.SqrMagnitude(transform.position - track.points[nextPoint].position);
-            if (sqrDistanceToNextPoint < 100f)
+            if (sqrDistanceToNextPoint < 1000f)
             {
                 ++nextPoint;
                 if (nextPoint == track.pointCount) nextPoint = 0;
