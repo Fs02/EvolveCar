@@ -19,7 +19,7 @@ namespace EvolveCar.Experiment2
         {
             m_Distance = distance;
             m_Time = time;
-            m_Speed = distance / time;
+            m_Speed = distance / time * 2.2369f; // MPH
             m_Finish = finish;
         }
     }
