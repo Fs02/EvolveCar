@@ -195,7 +195,7 @@ namespace EvolveCar.Experiment2 {
         void OnCollisionEnter(Collision collision)
         {
             if (!ignoreCollision)
-                LearnManager.Instance.ReportCrash();
+                LearnManager.Instance.ReportCrash(collision.gameObject);
         }
     }
 }

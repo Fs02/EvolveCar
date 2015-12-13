@@ -8,6 +8,22 @@ using System;
 
 namespace EvolveCar.Experiment2
 {
+    public struct RunStatistics
+    {
+        public float m_Distance;
+        public float m_Time;
+        public float m_Speed;
+        public bool m_Finish;
+
+        public RunStatistics(float distance, float time, bool finish)
+        {
+            m_Distance = distance;
+            m_Time = time;
+            m_Speed = distance / time;
+            m_Finish = finish;
+        }
+    }
+
     [RequireComponent(typeof(Artificial.GeneticAlgorithm))]
     public class LearnManager : MonoBehaviour
     {
@@ -28,8 +44,10 @@ namespace EvolveCar.Experiment2
         private Artificial.GeneticAlgorithm genetic;
         private int totalWeightInNN;
         private List<Artificial.Genome> population = new List<Artificial.Genome>();
+        private RunStatistics [] statistics;
         float time = 0f;
         float distance = 0f;
+        bool finish = false;
 
         public float CurrentFitness
         {
@@ -38,7 +56,6 @@ namespace EvolveCar.Experiment2
 
         [DBG_Track(0f, 0f, 1f)]
         public float BestFitness = 0;
-        public bool finish = false;
 
         private int currentIndividu = 0;
         private int currentGeneration = 1;
@@ -64,6 +81,7 @@ namespace EvolveCar.Experiment2
                 Load();
                 currentIndividu = 0;
                 respwan = 0;
+                statistics = new RunStatistics[population.Count];
                 ++currentGeneration;
                 population = genetic.Epoch(ref population);
                 StartCoroutine(FixedNext());
@@ -78,6 +96,7 @@ namespace EvolveCar.Experiment2
                 genetic.Init();
 
                 population = genetic.GetChromo();
+                statistics = new RunStatistics[population.Count];
 
                 List<string> label = new List<string>();
                 label.Add("#");
@@ -85,6 +104,10 @@ namespace EvolveCar.Experiment2
                 label.Add("Average fitness");
                 label.Add("Worst fitness");
                 label.Add("Respawn");
+                label.Add("Finish");
+                label.Add("Distance");
+                label.Add("Time");
+                label.Add("Speed");
                 StatisticsSummary.Add(label);
 
                 StartCoroutine(FixedNext());
@@ -141,9 +164,10 @@ namespace EvolveCar.Experiment2
 
         void CalculateFitness()
         {
-            var wDistance = 1f;
-            var wTime = 1f;
-            population[currentIndividu - 1].m_fitness = distance * wDistance + wTime / time;
+            var elapsedTime = time;
+            if (elapsedTime == 0) elapsedTime = 1f;
+            population[currentIndividu - 1].m_fitness = distance + 10 * distance / elapsedTime;
+            statistics[currentIndividu - 1] = new RunStatistics(distance, time, finish);
         }
 
         void NextIndividu()
@@ -158,6 +182,7 @@ namespace EvolveCar.Experiment2
             distance = 0f;
             timeleft = maxTrialTime;
             time = 0f;
+            finish = false;
         }
 
         void NextGeneration()
@@ -184,8 +209,11 @@ namespace EvolveCar.Experiment2
             time = 0f;
         }
 
-        public void ReportCrash()
+        public void ReportCrash(GameObject obj)
         {
+            if (obj.name == "Finish")
+                finish = true;
+
             CalculateFitness();
             if (currentIndividu < populationSize)
             {
@@ -231,7 +259,7 @@ namespace EvolveCar.Experiment2
                 var weights = new List<float>();
                 for (int j = 0; j < genetic.m_chromosomeLength; ++j)
                 {
-                    weights.Add(float.Parse(data[i][j + 2]));
+                    weights.Add(float.Parse(data[i][j + 6]));
                 }
                 population.Add(new Artificial.Genome(weights, float.Parse(data[i][1])));
             }
@@ -327,6 +355,10 @@ namespace EvolveCar.Experiment2
             data = new List<string>();
             data.Add("No");
             data.Add("Fitness");
+            data.Add("Finish");
+            data.Add("Distance");
+            data.Add("Time");
+            data.Add("Speed");
             data.Add("Chromosome");
             row.Add(data);
 
@@ -336,6 +368,10 @@ namespace EvolveCar.Experiment2
                 data = new List<string>();
                 data.Add((++count).ToString());
                 data.Add(i.m_fitness.ToString());
+                data.Add(statistics[count - 1].m_Finish.ToString());
+                data.Add(statistics[count - 1].m_Distance.ToString());
+                data.Add(statistics[count - 1].m_Time.ToString());
+                data.Add(statistics[count - 1].m_Speed.ToString());
                 foreach (float c in genetic.m_population[count - 1].m_weights)
                     data.Add(c.ToString());
 
@@ -353,6 +389,10 @@ namespace EvolveCar.Experiment2
             stats.Add(genetic.m_averageFitness.ToString());
             stats.Add(genetic.m_worstFitness.ToString());
             stats.Add(respwan.ToString());
+            stats.Add(statistics[genetic.m_fittestGenomeId].m_Finish.ToString());
+            stats.Add(statistics[genetic.m_fittestGenomeId].m_Distance.ToString());
+            stats.Add(statistics[genetic.m_fittestGenomeId].m_Time.ToString());
+            stats.Add(statistics[genetic.m_fittestGenomeId].m_Speed.ToString());
             StatisticsSummary.Add(stats);
 
             Utility.CsvFileWriter.WriteAll(StatisticsSummary, "Reports/summary.csv", Encoding.ASCII);
