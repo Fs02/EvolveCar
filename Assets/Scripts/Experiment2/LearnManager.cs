@@ -128,6 +128,7 @@ namespace EvolveCar.Experiment2
         {
             timeleft -= Time.fixedDeltaTime;
             time += Time.fixedDeltaTime;
+            CalculateFitness();
 
 
             float newDistance;
@@ -137,8 +138,6 @@ namespace EvolveCar.Experiment2
                 distance = newDistance;
                 timeleft = maxTrialTime;
             }
-
-            CalculateFitness();
 
             genetic.CalculateBestWorstAvTot();
             indicator.text =
@@ -214,7 +213,6 @@ namespace EvolveCar.Experiment2
             if (obj.name == "Finish")
                 finish = true;
 
-            CalculateFitness();
             if (currentIndividu < populationSize)
             {
                 StartCoroutine(FixedNext());
