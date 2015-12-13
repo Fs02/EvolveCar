@@ -14,8 +14,10 @@ namespace EvolveCar.Experiment2 {
         private CarController m_CarController;    // Reference to actual car controller we are controlling
         private Artificial.NeuralNetwork m_BlackBox;
         private Rigidbody m_Rigidbody;
-        public bool isReset = true;
+        private bool isReset = true;
 
+        public Utility.CatmullRomSpline track;
+        public int nextPoint = 0;
         public float sight = 25f;
         public Transform sensor;
         public bool ignoreCollision = false;
@@ -63,7 +65,27 @@ namespace EvolveCar.Experiment2 {
                 }
             }
 
+            var sqrDistanceToNextPoint = Vector3.SqrMagnitude(transform.position - track.points[nextPoint].position);
+            if (sqrDistanceToNextPoint < 100f)
+            {
+                ++nextPoint;
+                if (nextPoint == track.pointCount) nextPoint = 0;
+            }
+
             List<float> inputs = new List<float>();
+
+            var point = transform.InverseTransformPoint(track.points[nextPoint].position).normalized;
+            inputs.Add(point.x);
+            inputs.Add(point.y);
+            inputs.Add(point.z);
+            Debug.DrawLine(transform.position, track.points[nextPoint].position, Color.green);
+
+            var afterNextPoint = nextPoint + 1 == track.pointCount ? 0 : nextPoint + 1;
+            point = transform.InverseTransformPoint(track.points[afterNextPoint].position).normalized;
+            inputs.Add(point.x);
+            inputs.Add(point.y);
+            inputs.Add(point.z);
+            Debug.DrawLine(transform.position, track.points[afterNextPoint].position, Color.blue);
 
             // Forward Sensor
             RaycastHit hit = new RaycastHit();
@@ -155,6 +177,7 @@ namespace EvolveCar.Experiment2 {
         public void Reset()
         {
             isReset = true;
+            nextPoint = 0;
             StartCoroutine(NeedReset());
         }
 

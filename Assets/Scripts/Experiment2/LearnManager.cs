@@ -17,6 +17,7 @@ namespace EvolveCar.Experiment2
             get { return instance; }
         }
 
+        public float TimeScale = 1f;
         public Transform start;
         public Utility.CatmullRomSpline track;
         public Artificial.NeuralNetwork carBrain;
@@ -37,10 +38,11 @@ namespace EvolveCar.Experiment2
 
         [DBG_Track(0f, 0f, 1f)]
         public float BestFitness = 0;
+        public bool finish = false;
 
         private int currentIndividu = 0;
         private int currentGeneration = 1;
-        private float timeleft = 10f;
+        private float timeleft = 2f;
 
         public Text indicator;
 
@@ -89,6 +91,7 @@ namespace EvolveCar.Experiment2
             }
 
             Application.runInBackground = true;
+            Time.timeScale = TimeScale;
         }
 
         IEnumerator FixedNext()
