@@ -22,6 +22,7 @@ namespace EvolveCar.Experiment2 {
         public Transform sensor;
         public bool ignoreCollision = false;
         public Text indicator;
+        public Text speedIndicator;
 
         //    [DBG_Track()]
         public float Steering = 0f;
@@ -172,6 +173,8 @@ namespace EvolveCar.Experiment2 {
 
             text += "\nFitness : " + LearnManager.Instance.CurrentFitness;
             indicator.text = text;
+
+            speedIndicator.text = (int)m_CarController.CurrentSpeed + " MPH";
         }
 
         public void Reset()
