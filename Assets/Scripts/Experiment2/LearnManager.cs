@@ -117,18 +117,6 @@ namespace EvolveCar.Experiment2
             Application.runInBackground = true;
         }
 
-        IEnumerator FixedNext()
-        {
-            if (!isFixedNext)
-            {
-                isFixedNext = true;
-                NextIndividu(); // avoid error
-                yield return new WaitForFixedUpdate();
-                Respawn();
-                isFixedNext = false;
-            }
-        }
-
         void FixedUpdate()
         {
             if (isFixedNext)
@@ -137,7 +125,6 @@ namespace EvolveCar.Experiment2
             timeleft -= Time.fixedDeltaTime;
             time += Time.fixedDeltaTime;
             CalculateFitness();
-
 
             float newDistance;
             Debug.DrawLine(carBrain.transform.position, track.GetClosestPoint(carBrain.transform.position, out newDistance, 30));
@@ -159,14 +146,9 @@ namespace EvolveCar.Experiment2
             if (timeleft > 0)
                 return;
 
-            if (currentIndividu < populationSize)
-            {
-                StartCoroutine(FixedNext());
-            }
-            else
-            {
-                NextGeneration();
-            }
+            time -= maxTrialTime;
+            Debug.Log(currentIndividu + "Timeout");
+            Next();
         }
 
         void Update()
@@ -205,6 +187,33 @@ namespace EvolveCar.Experiment2
             statistics[currentIndividu - 1] = new RunStatistics(distance, elapsedTime, finish);
         }
 
+        IEnumerator FixedNext()
+        {
+            if (!isFixedNext)
+            {
+                isFixedNext = true;
+                NextIndividu(); // avoid error
+                yield return new WaitForFixedUpdate();
+                Respawn();
+                isFixedNext = false;
+            }
+        }
+
+        void Next()
+        {
+            if (isFixedNext)
+                return;
+
+            if (currentIndividu < populationSize)
+            {
+                StartCoroutine(FixedNext());
+            }
+            else
+            {
+                NextGeneration();
+            }
+        }
+
         void NextIndividu()
         {
             carBrain.transform.position = start.position;
@@ -234,11 +243,11 @@ namespace EvolveCar.Experiment2
 
         public void Respawn()
         {
-            Debug.Log("Respawn");
             respwan++;
             carBrain.transform.position = start.position;
             carBrain.transform.rotation = start.rotation;
             carBrain.GetComponent<CarBrainController>().Reset();
+            population[currentIndividu - 1].m_fitness = 0;
 
             distance = 0f;
             timeleft = maxTrialTime;
@@ -247,20 +256,10 @@ namespace EvolveCar.Experiment2
 
         public void ReportCrash(GameObject obj)
         {
-            if (isFixedNext)
-                return;
-
             if (obj.name == "Finish")
                 finish = true;
 
-            if (currentIndividu < populationSize)
-            {
-                StartCoroutine(FixedNext());
-            }
-            else
-            {
-                NextGeneration();
-            }
+            Next();
         }
 
         void Load()

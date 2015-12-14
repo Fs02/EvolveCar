@@ -46,6 +46,7 @@ namespace EvolveCar.Experiment2 {
                 // reset all forces
                 m_Rigidbody = GetComponent<Rigidbody>();
                 m_Rigidbody.isKinematic = true;
+                m_CarController.Move(0f, 0f, 0f, 0f);
 
                 var wheels = GetComponentsInChildren<WheelCollider>();
                 foreach (WheelCollider wheel in wheels)
@@ -59,6 +60,7 @@ namespace EvolveCar.Experiment2 {
             if (m_Rigidbody.isKinematic)
             {
                 m_Rigidbody.isKinematic = false;
+                m_CarController.Move(0f, 0f, 0f, 0f);
                 var wheels = GetComponentsInChildren<WheelCollider>();
                 foreach (WheelCollider wheel in wheels)
                 {
@@ -135,13 +137,14 @@ namespace EvolveCar.Experiment2 {
         {
             isReset = true;
             nextPoint = 0;
+            m_CarController.Move(0f, 0f, 0f, 0f);
             StartCoroutine(NeedReset());
         }
 
         IEnumerator NeedReset()
         {
             yield return new WaitForSeconds(0.5f);
-            if (Speed < 0.001f && Gass > 0.5f)
+            if (Speed < 0.01f && Gass > 0.5f)
             {
                 gameObject.SetActive(false);
                 gameObject.SetActive(true);
