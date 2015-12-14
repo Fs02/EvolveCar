@@ -108,7 +108,8 @@ namespace EvolveCar.Experiment2 {
                 hit.distance = s.distance;
                 Physics.Raycast(transform.position, s.direction, out hit, s.distance);
                 inputs.Add(hit.distance / s.distance);
-                Debug.DrawRay(transform.position, s.direction * s.distance, Color.red);
+                if (hit.collider)
+                    Debug.DrawRay(transform.position, s.direction * hit.distance, Color.red);
             }
 
             List<float> outputs = m_BlackBox.Process(inputs);
