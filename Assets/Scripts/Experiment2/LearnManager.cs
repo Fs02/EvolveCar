@@ -247,6 +247,9 @@ namespace EvolveCar.Experiment2
 
         public void ReportCrash(GameObject obj)
         {
+            if (isFixedNext)
+                return;
+
             if (obj.name == "Finish")
                 finish = true;
 
