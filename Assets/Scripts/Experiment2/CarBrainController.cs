@@ -146,8 +146,9 @@ namespace EvolveCar.Experiment2 {
             yield return new WaitForSeconds(0.5f);
             if (Speed < 0.01f && Gass > 0.5f)
             {
-                gameObject.SetActive(false);
-                gameObject.SetActive(true);
+                isReset = true;
+//                gameObject.SetActive(false);
+//                gameObject.SetActive(true);
                 LearnManager.Instance.Respawn();
             }
         }

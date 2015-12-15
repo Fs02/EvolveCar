@@ -19,7 +19,7 @@ namespace EvolveCar.Experiment2
         {
             m_Distance = distance;
             m_Time = time;
-            m_Speed = distance / time * 2.2369f; // MPH
+            m_Speed = distance / time * 2.23693629f; // MPH
             m_Finish = finish;
         }
     }
@@ -136,7 +136,9 @@ namespace EvolveCar.Experiment2
 
             genetic.CalculateBestWorstAvTot();
             indicator.text =
-                "Generation : " + currentGeneration +
+                "Time : " + time +
+                "\nDisntace : " + distance +
+                "\n\nGeneration : " + currentGeneration +
                 "\nIndividu : " + currentIndividu +
                 "\nTotal fit : " + genetic.m_totalFitness +
                 "\nBest fit : " + genetic.m_bestFitness +
@@ -193,6 +195,7 @@ namespace EvolveCar.Experiment2
             {
                 isFixedNext = true;
                 NextIndividu(); // avoid error
+                yield return new WaitForFixedUpdate();
                 yield return new WaitForFixedUpdate();
                 Respawn();
                 isFixedNext = false;
