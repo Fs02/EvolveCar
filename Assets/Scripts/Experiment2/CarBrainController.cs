@@ -20,6 +20,7 @@ namespace EvolveCar.Experiment2 {
         public int nextPoint = 0;
         public float sight = 25f;
         public Transform sensor;
+        public Transform forward;
         public bool ignoreCollision = false;
         public Text indicator;
         public Text speedIndicator;
@@ -77,6 +78,15 @@ namespace EvolveCar.Experiment2 {
 
             List<float> inputs = new List<float>();
 
+            var forwardTrackPos = track.GetClosestPoint(forward.position);
+            var trackPos = track.GetClosestPoint(sensor.position);
+            var direction = (forwardTrackPos - trackPos).normalized;
+            Debug.DrawRay(transform.position, direction * 10f, Color.blue);
+            inputs.Add(direction.x);
+            inputs.Add(direction.y);
+            inputs.Add(direction.z);
+
+            /*
             var point = transform.InverseTransformPoint(track.points[nextPoint].position).normalized;
             inputs.Add(point.x);
             inputs.Add(point.y);
@@ -89,6 +99,7 @@ namespace EvolveCar.Experiment2 {
             inputs.Add(point.y);
             inputs.Add(point.z);
             Debug.DrawLine(transform.position, track.points[afterNextPoint].position, Color.blue);
+            */
 
             Speed = m_CarController.CurrentSpeed / m_CarController.MaxSpeed;
             inputs.Add(Speed);
