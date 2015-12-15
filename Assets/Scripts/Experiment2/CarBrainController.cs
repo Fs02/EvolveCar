@@ -95,23 +95,23 @@ namespace EvolveCar.Experiment2 {
 
             var sensors = new[]
             {
-                new { direction = transform.forward, distance = 200f },
-                new { direction = Quaternion.AngleAxis(5f, transform.up) * transform.forward, distance = 200f },
-                new { direction = Quaternion.AngleAxis(-5f, transform.up) * transform.forward, distance = 200f },
-                new { direction = Quaternion.AngleAxis(15f, transform.up) * transform.forward, distance = 130f },
-                new { direction = Quaternion.AngleAxis(-15f, transform.up) * transform.forward, distance = 130f },
-                new { direction = Quaternion.AngleAxis(30f, transform.up) * transform.forward, distance = 50f },
-                new { direction = Quaternion.AngleAxis(-30f, transform.up) * transform.forward, distance = 50f }
+                new { direction = sensor.forward, distance = 200f },
+                new { direction = Quaternion.AngleAxis(5f, sensor.up) * sensor.forward, distance = 200f },
+                new { direction = Quaternion.AngleAxis(-5f, sensor.up) * sensor.forward, distance = 200f },
+                new { direction = Quaternion.AngleAxis(15f, sensor.up) * sensor.forward, distance = 130f },
+                new { direction = Quaternion.AngleAxis(-15f, sensor.up) * sensor.forward, distance = 130f },
+                new { direction = Quaternion.AngleAxis(30f, sensor.up) * sensor.forward, distance = 50f },
+                new { direction = Quaternion.AngleAxis(-30f, sensor.up) * sensor.forward, distance = 50f }
             };
 
             RaycastHit hit = new RaycastHit();
             foreach (var s in sensors)
             {
                 hit.distance = s.distance;
-                Physics.Raycast(transform.position, s.direction, out hit, s.distance);
+                Physics.Raycast(sensor.position, s.direction, out hit, s.distance);
                 inputs.Add(hit.distance / s.distance);
                 if (hit.collider)
-                    Debug.DrawRay(transform.position, s.direction * hit.distance, Color.red);
+                    Debug.DrawRay(sensor.position, s.direction * hit.distance, Color.red);
             }
 
             List<float> outputs = m_BlackBox.Process(inputs);
