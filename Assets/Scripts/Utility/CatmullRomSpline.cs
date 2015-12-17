@@ -316,10 +316,11 @@ namespace Utility
         public Vector3 GetClosestPoint(Vector3 point, int resolution = 10)
         {
             float distance;
-            return GetClosestPoint(point, out distance, resolution);
+            Vector3 direction;
+            return GetClosestPoint(point, out direction, out distance, resolution);
         }
 
-        public Vector3 GetClosestPoint(Vector3 point, out float distance, int resolution = 10)
+        public Vector3 GetClosestPoint(Vector3 point, out Vector3 direction, out float distance, int resolution = 10)
         {
             int start = 1;
             int end = 2;
@@ -351,12 +352,14 @@ namespace Utility
             var p1 = points[closest];
             var p2 = points[closest == pointCount - 2 ? 0 : closest + 1];
             var p3 = points[closest == pointCount - 2 ? 1 : closest + 2];
-            var lastpos = points[closest].position;
+            var lastpos = p1.position;
             var lastdis = Vector3.SqrMagnitude(point - lastpos);
+            direction = Vector3.zero;
             for (int i = 1; i <= resolution; ++i )
             {
                 var curpos = GetPoint(p0, p1, p2, p3, i/(float)resolution);
                 var curdis = Vector3.SqrMagnitude(point - curpos);
+                direction = curpos - lastpos;
                 if (curdis > lastdis)
                     break;
 
@@ -364,6 +367,7 @@ namespace Utility
                 lastpos = curpos;
                 lastdis = curdis;
             }
+            direction.Normalize();
             return lastpos;
 
             /*

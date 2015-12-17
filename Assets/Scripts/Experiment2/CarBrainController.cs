@@ -78,10 +78,16 @@ namespace EvolveCar.Experiment2 {
 
             List<float> inputs = new List<float>();
 
-            var forwardTrackPos = track.GetClosestPoint(forward.position);
-            var trackPos = track.GetClosestPoint(sensor.position);
-            var direction = (forwardTrackPos - trackPos).normalized;
+//            var forwardTrackPos = track.GetClosestPoint(forward.position);
+//            var trackPos = track.GetClosestPoint(sensor.position);
+//            var direction = (forwardTrackPos - trackPos).normalized;
+            Vector3 direction;
+            float distance;
+            track.GetClosestPoint(forward.position, out direction, out distance);
+            if (direction == Vector3.zero)
+                Debug.Log("Warning, direction zero");
             Debug.DrawRay(transform.position, direction * 10f, Color.blue);
+            direction = transform.InverseTransformDirection(direction);
             inputs.Add(direction.x);
             inputs.Add(direction.y);
             inputs.Add(direction.z);

@@ -127,7 +127,8 @@ namespace EvolveCar.Experiment2
             CalculateFitness();
 
             float newDistance;
-            Debug.DrawLine(carBrain.transform.position, track.GetClosestPoint(carBrain.transform.position, out newDistance, 30));
+            Vector3 direction;
+            Debug.DrawLine(carBrain.transform.position, track.GetClosestPoint(carBrain.transform.position, out direction, out newDistance, 30));
             if (newDistance > distance)
             {
                 distance = newDistance;
@@ -185,7 +186,7 @@ namespace EvolveCar.Experiment2
         {
             var elapsedTime = time;
             if (elapsedTime == 0) elapsedTime = 1f;
-            population[currentIndividu - 1].m_fitness = distance + 10 * distance / elapsedTime;
+            population[currentIndividu - 1].m_fitness = distance + distance / elapsedTime;
             statistics[currentIndividu - 1] = new RunStatistics(distance, elapsedTime, finish);
         }
 

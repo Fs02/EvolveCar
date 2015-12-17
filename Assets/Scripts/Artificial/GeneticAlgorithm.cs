@@ -99,6 +99,7 @@ namespace Artificial
                 baby2.m_weights = new List<float>(dad.m_weights);
                 return;
             }
+
             // Uniform crossover
             for (int i = 0; i < mum.m_weights.Count; ++i)
             { 
